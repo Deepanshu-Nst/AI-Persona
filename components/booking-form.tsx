@@ -207,12 +207,15 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
           ) : availableSlots.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {availableSlots.map((slot, i) => {
-                const startDate = new Date(slot.start);
-                const timeLabel = startDate.toLocaleTimeString("en-US", {
-                  timeZone: "Asia/Kolkata",
-                  hour: "numeric",
-                  minute: "2-digit",
-                });
+                // Format slot time in IST (UTC+5:30) without relying on toLocaleTimeString
+                const utcMs = new Date(slot.start).getTime();
+                const istMs = utcMs + 5.5 * 60 * 60 * 1000;
+                const istDate = new Date(istMs);
+                const h24 = istDate.getUTCHours();
+                const mm = istDate.getUTCMinutes().toString().padStart(2, "0");
+                const ampm = h24 >= 12 ? "PM" : "AM";
+                const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+                const timeLabel = `${h12}:${mm} ${ampm}`;
                 const isSelected = selectedSlotIso === slot.start;
 
                 return (

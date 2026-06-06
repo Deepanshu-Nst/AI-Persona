@@ -51,27 +51,23 @@ export function parseIstDateTime(dateStr: string, timeStr: string): Date {
 
 function generateMockSlots(date: string): TimeSlot[] {
   const slots: TimeSlot[] = [];
-  const base = parseIstDateOnly(date);
+  const base = parseIstDateOnly(date); // midnight IST = 18:30 UTC previous day
   if (isNaN(base.getTime())) return [];
 
-  // Skip weekends (0 = Sunday, 6 = Saturday)
-  // Get the day of the week in IST by constructing a UTC date at noon to avoid offset shifting the day
+  // Skip weekends
   const dateParts = date.split("-");
   const dayOfWeek = new Date(Date.UTC(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10), 12)).getUTCDay();
-  
-  if (dayOfWeek === 0 || dayOfWeek === 6) {
-    console.log(`generateMockSlots: weekend date ${date} (day ${dayOfWeek}) skipped.`);
-    return [];
-  }
+  if (dayOfWeek === 0 || dayOfWeek === 6) return [];
 
-  for (let h = 9; h <= 17; h++) {
-    if (h === 12 || h === 13) continue; // Skip lunch hours
-    const start = new Date(base.getTime() + h * 60 * 60 * 1000);
-    const end = new Date(start.getTime() + 30 * 60 * 1000);
-    slots.push({
-      start: start.toISOString(),
-      end: end.toISOString(),
-    });
+  // 9 AM IST = base + 9h, 6 PM IST = base + 18h, 30-min slots
+  const IST_START_MINUTES = 9 * 60;   // 9:00 AM IST
+  const IST_END_MINUTES   = 18 * 60;  // 6:00 PM IST
+  const SLOT_MINUTES = 30;
+
+  for (let m = IST_START_MINUTES; m < IST_END_MINUTES; m += SLOT_MINUTES) {
+    const start = new Date(base.getTime() + m * 60 * 1000);
+    const end   = new Date(start.getTime() + SLOT_MINUTES * 60 * 1000);
+    slots.push({ start: start.toISOString(), end: end.toISOString() });
   }
   return slots;
 }
@@ -170,7 +166,7 @@ export class CalendarClient {
       
       console.log("Google Calendar busy ranges retrieved:", busy);
 
-      const freeSlots = this.computeFreeSlots(dayStart, dayEnd, busy, 30);
+      const freeSlots = this.computeFreeSlots(dayStart, busy, 30);
 
       console.log("checkAvailability generated slots from Google Calendar:", {
         date,
@@ -251,45 +247,34 @@ export class CalendarClient {
 
   private computeFreeSlots(
     dayStart: Date,
-    dayEnd: Date,
     busy: { start: string; end: string }[],
     slotMinutes: number,
   ): TimeSlot[] {
-    const BUSINESS_START = 9;
-    const BUSINESS_END = 17;
+    // Business hours: 9 AM – 6 PM IST
+    // dayStart = midnight IST (in UTC). Add 9h for 9 AM IST, 18h for 6 PM IST.
+    const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+    const businessStart = new Date(dayStart.getTime() + 9 * 60 * 60 * 1000);
+    const businessEnd   = new Date(dayStart.getTime() + 18 * 60 * 60 * 1000);
     const slots: TimeSlot[] = [];
 
     const busyRanges = busy
-      .map((b) => ({
-        start: new Date(b.start).getTime(),
-        end: new Date(b.end).getTime(),
-      }))
+      .map((b) => ({ start: new Date(b.start).getTime(), end: new Date(b.end).getTime() }))
       .sort((a, b) => a.start - b.start);
 
-    let cursor = new Date(dayStart.getTime() + BUSINESS_START * 60 * 60 * 1000);
-    const end = new Date(dayStart.getTime() + BUSINESS_END * 60 * 60 * 1000);
-
-    while (cursor < end) {
+    let cursor = new Date(businessStart);
+    while (cursor < businessEnd) {
       const slotEnd = new Date(cursor.getTime() + slotMinutes * 60 * 1000);
-      if (slotEnd > end) break;
+      if (slotEnd > businessEnd) break;
 
-      const slotStartMs = cursor.getTime();
-      const slotEndMs = slotEnd.getTime();
-
-      const overlaps = busyRanges.some(
-        (b) => slotStartMs < b.end && slotEndMs > b.start,
-      );
+      const s = cursor.getTime();
+      const e = slotEnd.getTime();
+      const overlaps = busyRanges.some((b) => s < b.end && e > b.start);
 
       if (!overlaps) {
-        slots.push({
-          start: cursor.toISOString(),
-          end: slotEnd.toISOString(),
-        });
+        slots.push({ start: cursor.toISOString(), end: slotEnd.toISOString() });
       }
-
-      cursor = new Date(cursor.getTime() + slotMinutes * 60 * 1000);
+      cursor = slotEnd;
     }
-
     return slots;
   }
 }
