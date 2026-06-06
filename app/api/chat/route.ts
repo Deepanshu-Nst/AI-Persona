@@ -26,7 +26,10 @@ export async function POST(request: NextRequest) {
 
     if (response.stream) {
       const headers = new Headers();
-      headers.set("X-Sources", JSON.stringify(sources));
+      // Only send labels to keep header size small, and encode to base64 to avoid HTTP header unicode crashes
+      const safeSources = sources.map(s => ({ label: s.label }));
+      const encodedSources = Buffer.from(JSON.stringify(safeSources)).toString('base64');
+      headers.set("X-Sources", encodedSources);
       headers.set("X-Booking-Available", bookingAvailable ? "true" : "false");
 
       return new Response(response.stream.textStream, { headers });

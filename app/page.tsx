@@ -108,7 +108,7 @@ export default function AppCanvas() {
       let parsedSources = undefined;
       if (sourcesHeader) {
         try {
-          parsedSources = JSON.parse(sourcesHeader);
+          parsedSources = JSON.parse(atob(sourcesHeader));
         } catch {}
       }
 
