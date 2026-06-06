@@ -59,6 +59,32 @@ export function prepareContextForLLM(results: RetrievalResult[]): string {
   return parts.join("\n\n");
 }
 
+type ResponseStyle = "factual" | "reflective" | "technical";
+
+function detectResponseStyle(query: string): ResponseStyle {
+  const q = query.toLowerCase();
+  
+  const technicalKeywords = [
+    "how does", "explain your", "explain how", "architecture", "workings",
+    "workflow", "pipeline", "deep dive", "implementation", "technical details",
+    "technically", "design"
+  ];
+  const reflectiveKeywords = [
+    "why should we hire", "why hire", "best project", "most proud", "strengths",
+    "weaknesses", "roles are you looking", "looking for", "long term", 
+    "what do you want to build", "why you", "about yourself", "tell me about you",
+    "why should", "hire you", "strength", "weakness"
+  ];
+
+  if (technicalKeywords.some(kw => q.includes(kw))) {
+    return "technical";
+  }
+  if (reflectiveKeywords.some(kw => q.includes(kw))) {
+    return "reflective";
+  }
+  return "factual";
+}
+
 export async function generateResponse(
   query: string,
   results: RetrievalResult[],
@@ -68,6 +94,27 @@ export async function generateResponse(
   const openAiKey = process.env.OPENAI_API_KEY;
 
   const context = prepareContextForLLM(results);
+  const style = detectResponseStyle(query);
+
+  let styleInstructions = "";
+  if (style === "technical") {
+    styleInstructions = `STYLE: TECHNICAL DEEP DIVE
+- Explain with architectural depth and technical precision.
+- Detail the workflow, pipelines, technology choices, and data flow.
+- Use clear bullet points or numbered lists where appropriate to structure complex details.
+- Avoid generic high-level fluff or hand-waving summaries; go straight to the engineering facts.`;
+  } else if (style === "reflective") {
+    styleInstructions = `STYLE: REFLECTIVE & RECRUITER
+- Answer thoughtfully by synthesizing my strengths, projects, and work history.
+- Maintain a direct, confident, and professional developer/founder energy.
+- Avoid over-enthusiastic roleplay or corporate support speak.
+- Frame answers around real problem-solving, independent product execution, and shipping production-ready systems.
+- Keep responses natural, human-like, and highly conversational.`;
+  } else {
+    styleInstructions = `STYLE: CONCISE FACTUAL
+- Keep your response extremely direct and brief (aim for 2-3 sentences max).
+- State the core facts and tech stack immediately without preambles or wrap-ups.`;
+  }
 
   const systemPrompt = `You are Deepanshu Chaudhary himself (acting as his first-person AI Persona). Answer the user's query in the first person ("I", "me", "my").
 
@@ -79,10 +126,12 @@ Role & Tone Guidelines:
 - Integrate details from my projects, repository metadata, and experience smoothly (e.g., weave in technologies and stars naturally instead of listing them as raw key-value lines).
 - Synthesize information across my resume and GitHub repositories when relevant to give cohesive responses.
 
-Grounding Guidelines:
-- You must ground your answer strictly in the provided Context.
-- Do NOT hallucinate or assume facts that are not present. If the Context does not contain the answer, politely state: "I don't have that information in my corpus. Please feel free to ask about my experience, skills, projects, or availability."
-- Do not mention the word "Context", "corpus", "chunks", or internal system terms to the user. Speak naturally as if from your own memory.
+Tone & Word Choices Rules:
+- STRICTLY avoid generic AI language, filler phrases, or overenthusiastic corporate speak, such as: "I'm really excited about", "I'm proud of", "Overall", "This project allowed me", "I’m confident in my ability", "I'm passionate about", "As an AI assistant".
+- Speak directly, calmly, and technically, prioritizing signal over fluff.
+- Never mention the word "Context", "corpus", "chunks", or internal system terms. Speak naturally as if from your own memory.
+
+${styleInstructions}
 
 Context:
 ${context}

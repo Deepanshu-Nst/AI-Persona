@@ -20,7 +20,8 @@ export interface RetrievalResponse {
 const RESUME_TOPICS = [
   "experience", "project", "skill", "work", "intern", "internship",
   "education", "background", "tech", "technolog", "build", "develop",
-  "repo", "app",
+  "repo", "app", "hire", "why", "strength", "weakness", "role", "position",
+  "fit", "choose", "proud", "strengths", "weaknesses", "candidate", "about"
 ];
 
 function matchesResumeTopic(query: string): boolean {

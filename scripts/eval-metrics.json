@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-06T14:08:57.104Z",
+  "generatedAt": "2026-06-06T14:36:02.974Z",
   "testCases": 17,
   "passed": 17,
   "failed": 0,
@@ -9,8 +9,8 @@
     "injectionFlagRate": 1,
     "fallbackPassRate": 1,
     "avgKnownScore": 4.3824,
-    "avgLatencyMs": 1.02,
-    "avgKnownLatencyMs": 2.39,
+    "avgLatencyMs": 1.09,
+    "avgKnownLatencyMs": 2.45,
     "avgUnknownLatencyMs": 0.78,
     "avgInjectionLatencyMs": 0.01
   },
@@ -30,7 +30,7 @@
       "name": "Known: FitCheck",
       "category": "known",
       "passed": true,
-      "latencyMs": 5.39,
+      "latencyMs": 5.88,
       "topScore": 2.753,
       "sources": [
         "GitHub > FitCheck",
@@ -45,7 +45,7 @@
       "name": "Known: Experience",
       "category": "known",
       "passed": true,
-      "latencyMs": 2.54,
+      "latencyMs": 1.99,
       "topScore": 2.4038,
       "sources": [
         "Resume > EXPERIENCE",
@@ -60,7 +60,7 @@
       "name": "Known: Skills",
       "category": "known",
       "passed": true,
-      "latencyMs": 2.06,
+      "latencyMs": 2.79,
       "topScore": 4.8141,
       "sources": [
         "Resume > SKILLS",
@@ -75,7 +75,7 @@
       "name": "Known: Bachelor",
       "category": "known",
       "passed": true,
-      "latencyMs": 1.18,
+      "latencyMs": 0.85,
       "topScore": 8.8243,
       "sources": [
         "Resume > EDUCATION",
@@ -90,7 +90,7 @@
       "name": "Known: Deepanshu work",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.8,
+      "latencyMs": 0.75,
       "topScore": 3.1169,
       "sources": [
         "Resume > Deepanshu Chaudhary",
@@ -105,7 +105,7 @@
       "name": "Unknown: quantum physics",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.76,
+      "latencyMs": 0.9,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -114,7 +114,7 @@
       "name": "Unknown: unicorn",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.67,
+      "latencyMs": 0.68,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -123,7 +123,7 @@
       "name": "Unknown: meaning of life",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.92,
+      "latencyMs": 0.76,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -159,25 +159,25 @@
       "name": "Booking: book a call",
       "category": "booking",
       "passed": true,
-      "latencyMs": 0.83,
+      "latencyMs": 1.32,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780754937101"
+      "details": "availability: 7 slots, booking: CONF-1780756562972"
     },
     {
       "name": "Booking: schedule meeting",
       "category": "booking",
       "passed": true,
-      "latencyMs": 0.08,
+      "latencyMs": 0.06,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780754937101"
+      "details": "availability: 7 slots, booking: CONF-1780756562972"
     },
     {
       "name": "Availability: check slots",
       "category": "availability",
       "passed": true,
-      "latencyMs": 0.02,
+      "latencyMs": 0.05,
       "topScore": null,
       "sources": [],
       "details": "returned 7 available slots"
@@ -186,7 +186,7 @@
       "name": "Fallback: generic projects",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.85,
+      "latencyMs": 0.99,
       "topScore": 5.1464,
       "sources": [
         "Resume > PROJECTS",
@@ -201,7 +201,7 @@
       "name": "Fallback: generic experience",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.65,
+      "latencyMs": 0.77,
       "topScore": 3.1169,
       "sources": [
         "Resume > Deepanshu Chaudhary",
@@ -216,7 +216,7 @@
       "name": "Fallback: skills request",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.58,
+      "latencyMs": 0.75,
       "topScore": 4.8141,
       "sources": [
         "Resume > SKILLS",

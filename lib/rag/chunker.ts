@@ -116,7 +116,15 @@ export function expandSynonyms(query: string): string {
     .replace(/\bprojects?\b/gi, "projects apps repositories builds")
     .replace(/\brepo\b/gi, "repository project codebase")
     .replace(/\brepositories\b/gi, "repository projects codebase")
-    .replace(/\bexperience\b/gi, "experience work internships background");
+    .replace(/\bexperience\b/gi, "experience work internships background")
+    .replace(/\bstrengths?\b/gi, "skills experience projects summary")
+    .replace(/\bweaknesses?\b/gi, "summary skills learning")
+    .replace(/\bhire\b/gi, "experience summary skills projects")
+    .replace(/\bproud\b/gi, "projects codebase fitcheck devasya")
+    .replace(/\broles?\b/gi, "experience internships background summary")
+    .replace(/\blooking for\b/gi, "experience internships background summary")
+    .replace(/\blong term\b/gi, "summary career goals learning")
+    .replace(/\bbuild\b/gi, "projects codebase fitcheck devasya");
 }
 
 export function normalizeQuery(query: string): string {

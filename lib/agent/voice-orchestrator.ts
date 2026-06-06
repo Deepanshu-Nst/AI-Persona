@@ -203,14 +203,14 @@ export async function handleVoiceQuery(
 
     if (result.rejected) {
       return {
-        text: "I can only answer questions about my background, projects, and GitHub repositories. Could you ask something related to that?",
+        text: "I mostly stay focused on my work, projects, and technical background here. Happy to talk about AI systems, products, engineering, or anything from my portfolio.",
         phase: "continue",
       };
     }
 
     if (result.results.length === 0) {
       return {
-        text: "I don't have information about that in my knowledge base. I can tell you about my resume, projects, or GitHub repos, or help you book a call. What would you like?",
+        text: "I don't really have enough context around that specifically, but I'm happy to talk about my projects, AI work, engineering experience, or anything from my portfolio.",
         phase: "continue",
       };
     }

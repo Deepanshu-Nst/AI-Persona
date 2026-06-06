@@ -50,7 +50,7 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
 
   if (result.rejected) {
     return {
-      answer: "I can only answer questions grounded in my resume and public GitHub repositories. Please ask something related to my background, experience, or projects.",
+      answer: "I mostly stay focused on my work, projects, and technical background here. Happy to talk about AI systems, products, engineering, or anything from my portfolio.",
       sources: [],
       metadata: { bookingAvailable: false, conversationId },
     };
@@ -58,7 +58,7 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
 
   if (result.results.length === 0 && !bookingIntent) {
     return {
-      answer: "I don't have information about that in my corpus. I can answer questions about my resume, projects, GitHub repositories, and availability. Could you try rephrasing or asking something else?",
+      answer: "I don't really have enough context around that specifically, but I'm happy to talk about my projects, AI work, engineering experience, or anything from my portfolio.",
       sources: [],
       metadata: { bookingAvailable: false, conversationId },
     };
