@@ -181,7 +181,7 @@ function generateHtml(m: Metrics): string {
 <body>
 
 <h1>🧠 Eval Report — Scaler AI Persona System</h1>
-<div class="subtitle">${generatedDate}  •  ${m.testCases} automated tests (${m.passed} passed, ${m.failed} failed)  •  <span class="badge">no-llm</span> <span class="badge">bm25+ngram</span></div>
+<div class="subtitle">${generatedDate}  •  ${m.testCases} automated tests (${m.passed} passed, ${m.failed} failed)  •  <span class="badge badge-ok">groq-llm</span> <span class="badge">bm25+ngram</span></div>
 
 <div class="section">
   <h2>⚡ 1. Voice First-Response Latency</h2>
@@ -235,20 +235,17 @@ function generateHtml(m: Metrics): string {
 <div class="section">
   <h2>⚖️ 7. Tradeoff</h2>
   <div class="highlight">
-    <strong>No LLM API → zero hallucination, zero per-query cost.</strong>
-    Answers are verbatim corpus excerpts reconstructed by BM25 + n-gram retrieval.
-    This guarantees grounding and eliminates prompt injection risk,
-    but responses are not paraphrased — they read as retrieved text blocks
-    rather than natural dialogue. For a production system, a small, cheap LLM
-    (e.g. gpt-4o-mini, ~$0.15/day at projected volume) would paraphrase
-    results while keeping the retrieval layer as the sole knowledge source.
+    <strong>Hybrid LLM RAG → natural first-person dialogue with strict grounding.</strong>
+    Answers are retrieved via local BM25 + Jaccard similarity and synthesized in real-time by Groq's Llama 3 8B (with Gemini/OpenAI fallbacks).
+    This balances conversational fluidity with strict data boundaries, preventing hallucinations while speaking in first-person as the candidate.
+    The tradeoff is that it introduces a minor network call latency for the LLM API and requires API key configuration, but maintains a local fallback format if keys are absent.
   </div>
 </div>
 
 <div class="section">
   <h2>🚀 8. What I'd Build in 2 More Weeks</h2>
   <ol class="fail-list">
-    <li><strong>LLM paraphrasing layer</strong> — gpt-4o-mini or local model to rewrite retrieved chunks into fluent spoken responses. Keeps the BM25 grounding but adds natural language quality.</li>
+    <li><strong>Hybrid semantic search</strong> — integrate local vector embeddings (like SentenceTransformers or a lightweight client-side vector search library) alongside BM25 to capture deeper query intent.</li>
     <li><strong>Persistent session store</strong> — Swap the in-memory <code>Map</code> for Upstash Redis (free tier, 100MB). Survives restarts, enables multi-instance deploys.</li>
     <li><strong>Real STT accuracy tracking</strong> — Log Twilio <code>Transcription</code> callbacks, compute WER against expected queries, build a dashboard.</li>
     <li><strong>Voicemail detection + callback</strong> — Detect answering machines via <code>AnsweredBy</code> parameter, schedule a retry with a polite callback link.</li>

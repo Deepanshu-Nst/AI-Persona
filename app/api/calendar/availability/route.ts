@@ -40,5 +40,10 @@ async function handleAvailability(body: unknown) {
   }
 
   const slots = await getAvailability(parsed.data.date);
+  console.log({
+    requestedDate: parsed.data.date,
+    generatedSlots: slots,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
   return NextResponse.json({ date: parsed.data.date, slots });
 }

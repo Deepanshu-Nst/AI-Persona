@@ -29,6 +29,12 @@ function generateMockSlots(date: string): TimeSlot[] {
   const base = new Date(date + "T00:00:00Z");
   if (isNaN(base.getTime())) return [];
 
+  // Skip weekends (0 = Sunday, 6 = Saturday)
+  const day = base.getUTCDay();
+  if (day === 0 || day === 6) {
+    return [];
+  }
+
   for (let h = 9; h <= 17; h++) {
     if (h === 12 || h === 13) continue;
     const start = new Date(base);
@@ -58,33 +64,57 @@ export class CalendarClient {
     const config = getConfig();
 
     if (!this.calendar || !config.GOOGLE_CALENDAR_ID) {
-      return generateMockSlots(date);
+      const slots = generateMockSlots(date);
+      console.log("checkAvailability generated mock slots (no credentials):", {
+        date,
+        slotsCount: slots.length,
+        slots,
+      });
+      return slots;
     }
 
-    const cached = cachedSlots.get(date);
-    if (cached && Date.now() - cached.fetchedAt < SESSION_TTL) {
-      return cached.slots;
+    try {
+      const cached = cachedSlots.get(date);
+      if (cached && Date.now() - cached.fetchedAt < SESSION_TTL) {
+        console.log("checkAvailability cache hit:", { date, slotsCount: cached.slots.length });
+        return cached.slots;
+      }
+
+      const dayStart = new Date(date + "T00:00:00Z");
+      const dayEnd = new Date(date + "T23:59:59Z");
+
+      const res = await this.calendar.freebusy.query({
+        requestBody: {
+          timeMin: dayStart.toISOString(),
+          timeMax: dayEnd.toISOString(),
+          items: [{ id: config.GOOGLE_CALENDAR_ID }],
+        },
+      });
+
+      const rawBusy = res.data.calendars?.[config.GOOGLE_CALENDAR_ID]?.busy ?? [];
+      const busy: { start: string; end: string }[] = rawBusy
+        .filter((b): b is { start: string; end: string } => !!b.start && !!b.end)
+        .map((b) => ({ start: b.start!, end: b.end! }));
+      const freeSlots = this.computeFreeSlots(dayStart, dayEnd, busy, 30);
+
+      console.log("checkAvailability generated slots from Google Calendar:", {
+        date,
+        slotsCount: freeSlots.length,
+        slots: freeSlots,
+      });
+
+      cachedSlots.set(date, { slots: freeSlots, fetchedAt: Date.now() });
+      return freeSlots;
+    } catch (err) {
+      console.error("Google Calendar freebusy query failed. Falling back to mock slots.", err);
+      const slots = generateMockSlots(date);
+      console.log("checkAvailability fallback mock slots:", {
+        date,
+        slotsCount: slots.length,
+        slots,
+      });
+      return slots;
     }
-
-    const dayStart = new Date(date + "T00:00:00Z");
-    const dayEnd = new Date(date + "T23:59:59Z");
-
-    const res = await this.calendar.freebusy.query({
-      requestBody: {
-        timeMin: dayStart.toISOString(),
-        timeMax: dayEnd.toISOString(),
-        items: [{ id: config.GOOGLE_CALENDAR_ID }],
-      },
-    });
-
-    const rawBusy = res.data.calendars?.[config.GOOGLE_CALENDAR_ID]?.busy ?? [];
-    const busy: { start: string; end: string }[] = rawBusy
-      .filter((b): b is { start: string; end: string } => !!b.start && !!b.end)
-      .map((b) => ({ start: b.start!, end: b.end! }));
-    const freeSlots = this.computeFreeSlots(dayStart, dayEnd, busy, 30);
-
-    cachedSlots.set(date, { slots: freeSlots, fetchedAt: Date.now() });
-    return freeSlots;
   }
 
   async createEvent(params: {

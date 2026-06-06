@@ -122,21 +122,29 @@ export default function ChatPage() {
 
   const renderSources = (sources: ChatSource[]) => {
     return (
-      <div className="mt-3.5 pt-3.5 border-t border-zinc-800/80">
-        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-2">Sources Grounded</p>
-        <div className="space-y-1.5">
-          {sources.map((s, i) => (
-            <details key={i} className="group text-xs text-zinc-400 glass rounded-lg px-2.5 py-1.5 transition-all">
-              <summary className="cursor-pointer hover:text-zinc-200 font-semibold list-none flex justify-between items-center">
-                <span>{s.label}</span>
-                <span className="text-[10px] text-zinc-600 group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="mt-2 text-zinc-500 pl-2 border-l border-indigo-500/35 whitespace-pre-wrap leading-relaxed">
-                {s.snippet}
-              </p>
-            </details>
-          ))}
-        </div>
+      <div className="mt-3.5 pt-2 border-t border-zinc-900/60">
+        <details className="group">
+          <summary className="list-none flex items-center gap-1.5 cursor-pointer text-[10px] text-zinc-500 hover:text-zinc-400 font-bold uppercase tracking-wider select-none focus:outline-none">
+            <span className="transition-transform group-open:rotate-90 text-[8px]">▶</span>
+            <span>Grounded Sources ({sources.length})</span>
+          </summary>
+          <div className="mt-2.5 space-y-1.5 pl-2 animate-[fadeIn_0.15s_ease-out]">
+            {sources.map((s, i) => (
+              <details key={i} className="group/item text-[11px] text-zinc-400 bg-zinc-950/45 hover:bg-zinc-950/70 border border-zinc-900/80 rounded-xl px-3 py-2 transition-all">
+                <summary className="cursor-pointer hover:text-zinc-200 font-semibold list-none flex justify-between items-center select-none focus:outline-none">
+                  <span className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500/80" />
+                    {s.label}
+                  </span>
+                  <span className="text-[9px] text-zinc-600 group-open/item:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="mt-2 text-zinc-500 pl-2.5 border-l border-indigo-500/25 whitespace-pre-wrap leading-relaxed text-[10.5px]">
+                  {s.snippet}
+                </div>
+              </details>
+            ))}
+          </div>
+        </details>
       </div>
     );
   };

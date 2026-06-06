@@ -42,6 +42,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
   const [selectedTime, setSelectedTime] = useState("");
   const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string }[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
     const fetchSlots = async () => {
@@ -50,10 +51,12 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
       if (!dateRegex.test(normalizedDate)) {
         setAvailableSlots([]);
         setSelectedTime("");
+        setHasFetched(false);
         return;
       }
 
       setLoadingSlots(true);
+      setHasFetched(false);
       setErrorText("");
       try {
         const res = await fetch(`/api/calendar/availability?date=${normalizedDate}`);
@@ -61,11 +64,23 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
           throw new Error("Failed to load slots");
         }
         const data = await res.json();
-        setAvailableSlots(data.slots || []);
-        setSelectedTime("");
+        const slots = data.slots || [];
+        setAvailableSlots(slots);
+        
+        // Auto-select first available slot
+        if (slots.length > 0) {
+          const startDate = new Date(slots[0].start);
+          const pad = (n: number) => String(n).padStart(2, "0");
+          const timeValue = `${pad(startDate.getUTCHours())}:${pad(startDate.getUTCMinutes())}:${pad(startDate.getUTCSeconds())}`;
+          setSelectedTime(timeValue);
+        } else {
+          setSelectedTime("");
+        }
+        setHasFetched(true);
       } catch (err) {
         setErrorText("Could not fetch available slots for this date.");
         setAvailableSlots([]);
+        setHasFetched(true);
       } finally {
         setLoadingSlots(false);
       }
@@ -84,6 +99,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
     setSubmitting(false);
     setStatus("idle");
     setErrorText("");
+    setHasFetched(false);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -211,9 +227,9 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
                 );
               })}
             </div>
-          ) : (
+          ) : hasFetched ? (
             <p className="text-xs text-red-400 font-medium">No slots available for this date.</p>
-          )}
+          ) : null}
         </div>
       )}
 

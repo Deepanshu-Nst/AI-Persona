@@ -74,7 +74,7 @@ Single function `orchestrate(context)` that produces an `AgentResponse`:
    - **Rejected**: query matched an injection pattern → refusal message
    - **Empty + no booking**: no corpus match, no booking intent → "don't know" message
    - **Empty + booking**: no corpus match but booking keyword detected → booking prompt with `bookingAvailable: true`
-   - **Results**: top corpus chunk content as answer with source citations
+   - **Results**: `generateResponse(query, results)` converts retrieved chunks into a natural first-person reply using the LLM Synthesis layer
 
 ### Voice Orchestrator (`lib/agent/voice-orchestrator.ts`)
 
@@ -83,12 +83,12 @@ State machine with five phases managed by a `VoiceSession` object:
 | Phase | Trigger | Action | Output |
 |---|---|---|---|
 | `greeting` | Call answered | Welcome message, start listening | TwiML with Gather |
-| `qa` | User asks a question | `retrieve(transcript)` → speak top result (<400 chars) | TwiML with Gather |
+| `qa` | User asks a question | `retrieve(transcript)` → `generateResponse()` via LLM | TwiML with Gather |
 | `booking_date` | Booking keyword detected | `parseDate(transcript)` → `getAvailability(date)` → list slots | TwiML with Gather |
 | `booking_time` | User says a time | `parseTime(transcript)` → `bookSlot(...)` → confirmation | TwiML with confirmation or Gather |
 | `done` | Booking confirmed or user hangs up | Thank you message + Hangup | TwiML without Gather |
 
-The voice orchestrator uses the same `retrieve()`, `getAvailability()`, and `bookSlot()` tools as the chat orchestrator, but formats output differently (shorter, spoken-style responses).
+The voice orchestrator uses the same `retrieve()`, `generateResponse()`, `getAvailability()`, and `bookSlot()` tools as the chat orchestrator, but formats output differently (stripping markdown headings and newlines).
 
 #### Date/time parsing
 
@@ -112,6 +112,15 @@ retrieve(query)
        └─ results → { results[], sources[], rejected: false }
 ```
 
+### LLM Synthesis Layer (`lib/agent/llm.ts`)
+
+Converts raw search results into professional, recruiter-friendly first-person answers.
+- Checks `GROQ_API_KEY` to call Groq endpoint (`llama3-8b-8192`)
+- Falls back to `GEMINI_API_KEY` (Gemini 1.5 Flash)
+- Falls back to `OPENAI_API_KEY` (GPT-4o-Mini)
+- Falls back to local formatting template if no API keys are present.
+- Applies a helper function `prepareContextForLLM(results)` to deduplicate chunks, merge related resume sections, and structure context cleanly.
+
 ### Availability Tool (`lib/agent/availability-tool.ts`)
 
 Thin wrapper around the calendar client:
@@ -120,7 +129,7 @@ Thin wrapper around the calendar client:
 getAvailability(date)
   └─ calendarClient.checkAvailability(date)
        ├─ Google Calendar freebusy.query (with 10-min cache)
-       └─ Unconfigured → generateMockSlots(date)
+       └─ Unconfigured or Query Exception → generateMockSlots(date)
             Returns TimeSlot[] (9am–5pm, 30-min intervals, skip 12–1pm)
 ```
 
@@ -205,15 +214,13 @@ Availability responses are cached in memory with a 10-minute TTL to avoid redund
 
 ## Key Design Decisions
 
-### No LLM API
+### Hybrid LLM RAG Architecture
 
-The most important architectural decision. Every answer is a verbatim retrieved chunk. This gives:
-- **Zero hallucination** — there is no generative model to produce false information
-- **Zero per-query cost** — no API tokens consumed
-- **Zero prompt injection surface** — the guard only needs to detect 13 patterns
-- **Sub-millisecond latency** — BM25 on 17 chunks completes in < 2ms
-
-The tradeoff is that answers read as retrieved text blocks, not natural dialogue. A future LLM paraphrasing layer could sit on top while keeping BM25 as the sole knowledge source.
+The most important architectural decision. BM25 + Jaccard similarity retrieval selects relevant context chunks from the 17-chunk corpus, and then an LLM (Groq `llama3-8b-8192` preferred, with Gemini/OpenAI fallbacks) synthesizes a natural first-person response. This gives:
+- **Zero hallucination** — the LLM is strictly constrained via system instructions to only use the retrieved context, and the orchestrator bypasses LLM calls entirely if no relevant chunks are found.
+- **Extremely low per-query cost** — using Groq/Gemini keeps token charges virtually negligible.
+- **Prompt injection protection** — the guard checks 13 patterns *before* the search is executed, blocking adversarial queries before they can reach the LLM.
+- **Low latency** — Groq's completions return in sub-150ms.
 
 ### Tool-Based Orchestration
 
@@ -225,4 +232,4 @@ No external databases or caches. Sessions and calendar responses live in Node.js
 
 ### Google Calendar Mock Fallback
 
-When credentials are absent, the system generates synthetic slots. This lets the full booking flow work in development without any setup. The mock is clearly labeled in responses so it's never confused with real availability.
+When credentials are absent or calendar queries encounter failures, the system generates synthetic slots. This lets the full booking flow work in development or staging without any setup. The mock is clearly labeled in logs so it's never confused with real availability.

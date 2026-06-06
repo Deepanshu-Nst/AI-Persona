@@ -3,10 +3,10 @@
 Live AI persona system for the Scaler AI Engineer Intern screening assignment.
 Answers questions about the candidate's background and GitHub projects through a chat interface and a Twilio-powered voice agent. Can check real calendar availability and book slots.
 
-**Zero LLM API cost** — all answers are grounded in a pre-built corpus using BM25 + n-gram retrieval.
+**Conversational RAG Persona** — answers are retrieved from a pre-built corpus using BM25 + Jaccard similarity, and synthesized into natural, first-person replies via Groq API.
 
 ```
-no-llm  ·  bm25+ngram  ·  nextjs15  ·  typescript  ·  tailwindcss-v4
+groq-llm  ·  bm25+ngram  ·  nextjs15  ·  typescript  ·  tailwindcss-v4
 ```
 
 ---
@@ -92,8 +92,8 @@ no-llm  ·  bm25+ngram  ·  nextjs15  ·  typescript  ·  tailwindcss-v4
 
 ## Features
 
-- **Grounded chat interface** — ask questions about the candidate's resume and GitHub repositories. Answers are verbatim corpus excerpts, not generated text.
-- **Voice agent** — call a Twilio phone number to ask questions and book a meeting. State machine handles the conversation flow.
+- **Grounded chat interface** — ask questions about the candidate's resume and GitHub repositories. Answers are retrieved via BM25 + Jaccard similarity and synthesized in the first-person by the Groq LLM API.
+- **Voice agent** — call a Twilio phone number to ask questions and book a meeting. State machine handles the conversation flow, with spoken responses generated in real-time by the LLM.
 - **Calendar booking** — check real availability via Google Calendar API and book 30-minute slots. Falls back to mock slots when credentials are unset.
 - **Prompt injection guard** — 13 regex patterns detect adversarial queries before they reach the retrieval layer. Blocked queries return a refusal response.
 - **Eval report** — `npm run eval:test` runs 14 automated metric tests; `npm run eval:pdf` generates an A4-printable report.
@@ -120,7 +120,7 @@ POST /api/chat { message: "what is FitCheck?" }
   │    ├─ If rejected → refusal: "I can only answer questions grounded in..."
   │    ├─ If no results + no booking → "I don't have information about that..."
   │    ├─ If no results + booking intent → shows booking form
-  │    └─ If results → reply = top corpus chunk content + source citations
+  │    └─ If results → reply = generateResponse() via LLM Synthesis + source citations
   │
   └─ Response { reply, sources[], bookingAvailable }
 ```
@@ -141,7 +141,7 @@ Call rings
        │
        ├─ Phase: qa  (default — stay here until booking is detected)
        │    → retrieve(transcript)
-       │    → speak top result (<400 chars, natural phrasing)
+       │    → generateResponse() via LLM (paraphrased first-person, markdown headings stripped)
        │
        ├─ Phase: booking_date
        │    → parseDate(transcript) — "today", "tomorrow", "next Tuesday", MM/DD
@@ -160,12 +160,12 @@ Booking intent is detected via keyword matching (`"book"`, `"schedule"`, `"call"
 
 ### Grounding & Hallucination Prevention
 
-The system uses **no LLM API**. Every answer is a verbatim excerpt from the pre-built corpus:
+The system uses the **LLM API** for response synthesis, but keeps answers strictly grounded in the pre-built corpus:
 
-1. **No generation** — there is no model to jailbreak or hallucinate from. Answers are retrieved text blocks.
-2. **Pre-search injection guard** — `guardQuery()` checks 13 adversarial patterns before any search runs. Blocked queries never touch the corpus.
-3. **Empty-result handling** — if BM25 + n-gram returns no relevant chunk, the system says "I don't have information about that." It does not fabricate.
-4. **Verifiable sources** — every chat answer includes source labels pointing to the specific corpus section. Users can inspect the exact text used.
+1. **Strict Context Constraints** — the system prompt forces the LLM to ground answers exclusively in the retrieved context. It is explicitly told to speak in the first person and avoid hallucination or external facts.
+2. **Pre-search injection guard** — `guardQuery()` checks 13 adversarial patterns before any search runs. Blocked queries never reach the retrieval or LLM synthesis layers.
+3. **Empty-result handling** — if BM25 + Jaccard search returns no relevant chunk, the system returns a standard refusal immediately without calling the LLM, preventing model fabrication.
+4. **Verifiable sources** — every chat answer links to collapsible source tags pointing to the specific corpus section used.
 5. **Automated eval** — 14 eval tests measure groundedness and refusal behavior on out-of-corpus queries. Unsupported prompts are rejected by design.
 
 ### Calendar Booking
@@ -222,6 +222,9 @@ curl http://localhost:3000/api/health
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `NEXT_PUBLIC_APP_URL` | No | `http://localhost:3000` | Public URL for Twilio webhooks |
+| `GROQ_API_KEY` | No | — | Groq API Key (Preferred LLM provider) |
+| `GEMINI_API_KEY` | No | — | Gemini API Key (Fallback LLM provider) |
+| `OPENAI_API_KEY` | No | — | OpenAI API Key (Fallback LLM provider) |
 | `GOOGLE_CLIENT_EMAIL` | No | — | Google Calendar service account email |
 | `GOOGLE_PRIVATE_KEY` | No | — | Service account private key (use single quotes, preserve `\n`) |
 | `GOOGLE_CALENDAR_ID` | No | — | Calendar ID for availability checks and booking |
@@ -300,24 +303,24 @@ Environment variables can be set via the platform's configuration UI or a `.env.
 
 ## Cost Breakdown
 
-This system has **zero per-query API costs** because it uses no LLM. All inference is local BM25 retrieval.
+This system has **negligible per-query API costs** using the Groq Llama-3-8B model.
 
 | Component | Cost per unit | Monthly estimate (1,000 queries) | Notes |
 |---|---|---|---|
-| Chat query (BM25 search) | **$0.0000** | $0.00 | No external API calls. Pure local computation |
+| Chat query (Groq API) | ~$0.05 / 1M tokens | ~$0.01 | Extremely cheap open-source model hosting on Groq |
 | Voice call (Twilio inbound) | ~$0.013 / min | ~$1.30 (100 min) | US carrier rates. Billed per-minute by Twilio |
 | Google Calendar API | **Free** (1M queries/day) | $0.00 | Free tier covers typical usage |
 | Vercel hosting | **Free** (100 GB bandwidth) | $0.00 | Hobby plan sufficient |
-| **Total (chat-only usage)** | **$0.00** | **$0.00** | Entirely on free tier |
-| **Total (with voice)** | ~$0.013/min | ~$1.30 | Only Twilio minutes incur cost |
+| **Total (chat-only usage)** | **Negligible** | **<$0.02** | Entirely on free tier / cheap API keys |
+| **Total (with voice)** | ~$0.013/min | ~$1.30 | Twilio minutes + minor Groq token cost |
 
-Compared to an LLM-based system:
+Compared to a generic naive LLM setup:
 
-| Component | This system | LLM-based alternative |
+| Component | This system | Naive LLM alternative |
 |---|---|---|
-| Per-query inference | $0.0000 | ~$0.002–0.01 (gpt-4o-mini) |
-| Hallucination risk | None (retrieval-only) | Present (requires additional guardrails) |
-| Latency | ~1 ms retrieval | ~500–2000 ms API round-trip |
+| Per-query inference | ~$0.00002 (Groq) | ~$0.002–0.01 (gpt-4o-mini) |
+| Hallucination risk | Strictly Grounded (Local Search filters) | High (Relies on model memory) |
+| Latency | ~150-250 ms API round-trip | ~500–2000 ms API round-trip |
 
 ---
 
@@ -338,7 +341,7 @@ Metrics measured: known-query hit rate, out-of-corpus refusal behavior, injectio
 
 ## Future Improvements
 
-- **LLM paraphrasing layer** — use a small model (gpt-4o-mini, ~$0.15/day) to rewrite retrieved chunks into fluent spoken responses while keeping BM25 as the sole knowledge source.
+- **Hybrid Semantic Search** — integrate vector embeddings alongside BM25 search for deeper contextual matching.
 - **Persistent session store** — replace the in-memory `Map` with Upstash Redis (free tier) so calls survive server restarts.
 - **Voicemail detection** — detect answering machines via Twilio's `AnsweredBy` parameter and schedule a callback.
 - **STT accuracy tracking** — log Twilio `Transcription` callbacks and compute word error rate against expected queries.
