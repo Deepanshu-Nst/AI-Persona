@@ -24,15 +24,16 @@ function esc(text: string): string {
     .replace(/'/g, "&apos;");
 }
 
-export function parseUtcDateOnly(dateStr: string): Date {
+export function parseIstDateOnly(dateStr: string): Date {
   const parts = dateStr.split("-");
   const year = parseInt(parts[0], 10);
   const month = parseInt(parts[1], 10) - 1;
   const day = parseInt(parts[2], 10);
-  return new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+  // IST is UTC+05:30. To get midnight IST, we subtract 5 hours 30 mins from midnight UTC.
+  return new Date(Date.UTC(year, month, day, -5, -30, 0, 0));
 }
 
-export function parseUtcDateTime(dateStr: string, timeStr: string): Date {
+export function parseIstDateTime(dateStr: string, timeStr: string): Date {
   const dateParts = dateStr.split("-");
   const timeParts = timeStr.split(":");
 
@@ -44,27 +45,29 @@ export function parseUtcDateTime(dateStr: string, timeStr: string): Date {
   const minutes = parseInt(timeParts[1], 10);
   const seconds = timeParts[2] ? parseInt(timeParts[2], 10) : 0;
 
-  return new Date(Date.UTC(year, month, day, hours, minutes, seconds, 0));
+  // Subtract 5 hours and 30 minutes to convert IST to UTC
+  return new Date(Date.UTC(year, month, day, hours - 5, minutes - 30, seconds, 0));
 }
 
 function generateMockSlots(date: string): TimeSlot[] {
   const slots: TimeSlot[] = [];
-  const base = parseUtcDateOnly(date);
+  const base = parseIstDateOnly(date);
   if (isNaN(base.getTime())) return [];
 
   // Skip weekends (0 = Sunday, 6 = Saturday)
-  const day = base.getUTCDay();
-  if (day === 0 || day === 6) {
-    console.log(`generateMockSlots: weekend date ${date} (day ${day}) skipped.`);
+  // Get the day of the week in IST by constructing a UTC date at noon to avoid offset shifting the day
+  const dateParts = date.split("-");
+  const dayOfWeek = new Date(Date.UTC(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10), 12)).getUTCDay();
+  
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    console.log(`generateMockSlots: weekend date ${date} (day ${dayOfWeek}) skipped.`);
     return [];
   }
 
   for (let h = 9; h <= 17; h++) {
     if (h === 12 || h === 13) continue; // Skip lunch hours
-    const start = new Date(base);
-    start.setUTCHours(h, 0, 0, 0);
-    const end = new Date(base);
-    end.setUTCHours(h, 30, 0, 0);
+    const start = new Date(base.getTime() + h * 60 * 60 * 1000);
+    const end = new Date(start.getTime() + 30 * 60 * 1000);
     slots.push({
       start: start.toISOString(),
       end: end.toISOString(),
@@ -88,10 +91,11 @@ export class CalendarClient {
     const config = getConfig();
 
     // 1. Filter out weekends immediately at the top
-    const baseDate = parseUtcDateOnly(date);
-    const day = baseDate.getUTCDay();
-    if (day === 0 || day === 6) {
-      console.log(`checkAvailability: weekend date ${date} (day ${day}) requested. Returning empty slots.`);
+    const dateParts = date.split("-");
+    const dayOfWeek = new Date(Date.UTC(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10), 12)).getUTCDay();
+    
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      console.log(`checkAvailability: weekend date ${date} (day ${dayOfWeek}) requested. Returning empty slots.`);
       return [];
     }
 
@@ -112,7 +116,7 @@ export class CalendarClient {
         return cached.slots;
       }
 
-      const dayStart = parseUtcDateOnly(date);
+      const dayStart = parseIstDateOnly(date);
       const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000 - 1000); // end of day
 
       console.log("checkAvailability querying Google Calendar:", {
@@ -213,10 +217,8 @@ export class CalendarClient {
       }))
       .sort((a, b) => a.start - b.start);
 
-    let cursor = new Date(dayStart);
-    cursor.setUTCHours(BUSINESS_START, 0, 0, 0);
-    const end = new Date(dayStart);
-    end.setUTCHours(BUSINESS_END, 0, 0, 0);
+    let cursor = new Date(dayStart.getTime() + BUSINESS_START * 60 * 60 * 1000);
+    const end = new Date(dayStart.getTime() + BUSINESS_END * 60 * 60 * 1000);
 
     while (cursor < end) {
       const slotEnd = new Date(cursor.getTime() + slotMinutes * 60 * 1000);

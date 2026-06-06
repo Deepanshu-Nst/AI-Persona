@@ -1,4 +1,4 @@
-import { calendarClient, parseUtcDateTime } from "@/lib/calendar/client";
+import { calendarClient, parseIstDateTime } from "@/lib/calendar/client";
 
 export interface BookingInput {
   date: string;
@@ -23,7 +23,7 @@ export async function bookSlot(input: BookingInput): Promise<BookingResult> {
       timeStr += ":00";
     }
 
-    const start = parseUtcDateTime(input.date, timeStr);
+    const start = parseIstDateTime(input.date, timeStr);
     if (isNaN(start.getTime())) {
       console.error("bookSlot: invalid date/time conversion result", {
         date: input.date,

@@ -72,8 +72,12 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
         // Auto-select first available slot
         if (slots.length > 0) {
           const startDate = new Date(slots[0].start);
-          const pad = (n: number) => String(n).padStart(2, "0");
-          const timeValue = `${pad(startDate.getUTCHours())}:${pad(startDate.getUTCMinutes())}:${pad(startDate.getUTCSeconds())}`;
+          const timeValue = startDate.toLocaleTimeString("en-GB", {
+            timeZone: "Asia/Kolkata",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
           setSelectedTime(timeValue);
         } else {
           setSelectedTime("");
@@ -214,12 +218,16 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
             <div className="grid grid-cols-3 gap-2">
               {availableSlots.map((slot, i) => {
                 const startDate = new Date(slot.start);
-                const pad = (n: number) => String(n).padStart(2, "0");
-                const timeValue = `${pad(startDate.getUTCHours())}:${pad(startDate.getUTCMinutes())}:${pad(startDate.getUTCSeconds())}`;
                 const timeLabel = startDate.toLocaleTimeString("en-US", {
-                  timeZone: "UTC",
+                  timeZone: "Asia/Kolkata",
                   hour: "numeric",
                   minute: "2-digit",
+                });
+                const timeValue = startDate.toLocaleTimeString("en-GB", {
+                  timeZone: "Asia/Kolkata",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
                 });
                 const isSelected = selectedTime === timeValue;
 
