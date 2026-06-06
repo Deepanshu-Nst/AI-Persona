@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run ingest && next build",
     "lint": "eslint . --max-warnings 0",
     "start": "next start",
     "test": "tsx --test tests/**/*.test.ts",
