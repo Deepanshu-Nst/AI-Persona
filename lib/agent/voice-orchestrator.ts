@@ -1,6 +1,7 @@
 import { retrieve } from "@/lib/agent/retrieval-tool";
 import { getAvailability } from "@/lib/agent/availability-tool";
 import { bookSlot } from "@/lib/agent/booking-tool";
+import { generateResponse } from "@/lib/agent/llm";
 import type { VoiceSession } from "@/lib/twilio/session";
 
 const BOOKING_KEYWORDS = [
@@ -202,22 +203,23 @@ export async function handleVoiceQuery(
 
     if (result.rejected) {
       return {
-        text: "I can only answer questions about Deepanshu's background, projects, and GitHub repositories. Could you ask something related to that?",
+        text: "I can only answer questions about my background, projects, and GitHub repositories. Could you ask something related to that?",
         phase: "continue",
       };
     }
 
     if (result.results.length === 0) {
       return {
-        text: "I don't have information about that in my knowledge base. I can tell you about Deepanshu's resume, projects, or GitHub repos, or help you book a call. What would you like?",
+        text: "I don't have information about that in my knowledge base. I can tell you about my resume, projects, or GitHub repos, or help you book a call. What would you like?",
         phase: "continue",
       };
     }
 
-    const top = result.results[0];
-    const text = top.content.length > 400
-      ? top.content.slice(0, 400).replace(/#+\s*/g, "").replace(/\n+/g, " ").trim() + "..."
-      : top.content.replace(/#+\s*/g, "").replace(/\n+/g, " ").trim();
+    const reply = await generateResponse(transcript, result.results);
+    const text = reply
+      .replace(/#+\s*/g, "")
+      .replace(/\n+/g, " ")
+      .trim();
 
     return {
       text,

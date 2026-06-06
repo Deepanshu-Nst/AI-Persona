@@ -6,15 +6,15 @@ import { BookingForm } from "@/components/booking-form";
 
 const WELCOME_MESSAGE: ChatMessage = {
   role: "assistant",
-  content: "👋 Hi! I'm an AI assistant grounded in Deepanshu's resume and public GitHub repositories. Ask me about their background, projects, skills, or any public repo. I can also help you book a call.",
+  content: "👋 Hi! I'm Deepanshu's AI assistant, grounded in my resume and public GitHub repositories. Ask me about my experience, skills, projects, or public code repos. I can also help you check my availability and book a call!",
   timestamp: new Date().toISOString(),
 };
 
 const SUGGESTIONS = [
-  "What is FitCheck?",
-  "What experience does Deepanshu have?",
+  "What experience do you have?",
+  "What are your skills?",
   "Tell me about Aforro Dashboard",
-  "What are Deepanshu's skills?",
+  "What is FitCheck?",
   "Can I book a call?",
 ];
 
@@ -122,18 +122,21 @@ export default function ChatPage() {
 
   const renderSources = (sources: ChatSource[]) => {
     return (
-      <div className="mt-2 pt-2 border-t border-gray-200">
-        <p className="text-xs text-gray-400 font-medium mb-1">Sources</p>
-        {sources.map((s, i) => (
-          <details key={i} className="text-xs text-gray-500 mb-1">
-            <summary className="cursor-pointer hover:text-gray-700">
-              {s.label}
-            </summary>
-            <p className="mt-1 pl-2 border-l-2 border-gray-200 text-gray-400">
-              {s.snippet}
-            </p>
-          </details>
-        ))}
+      <div className="mt-3.5 pt-3.5 border-t border-zinc-800/80">
+        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-2">Sources Grounded</p>
+        <div className="space-y-1.5">
+          {sources.map((s, i) => (
+            <details key={i} className="group text-xs text-zinc-400 glass rounded-lg px-2.5 py-1.5 transition-all">
+              <summary className="cursor-pointer hover:text-zinc-200 font-semibold list-none flex justify-between items-center">
+                <span>{s.label}</span>
+                <span className="text-[10px] text-zinc-600 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="mt-2 text-zinc-500 pl-2 border-l border-indigo-500/35 whitespace-pre-wrap leading-relaxed">
+                {s.snippet}
+              </p>
+            </details>
+          ))}
+        </div>
       </div>
     );
   };
@@ -141,10 +144,10 @@ export default function ChatPage() {
   const renderMessage = (msg: ChatMessage, index: number) => {
     if (msg.role === "user") {
       return (
-        <div key={index} className="flex justify-end mb-4">
-          <div className="max-w-[80%] bg-blue-600 text-white rounded-2xl rounded-br-sm px-4 py-2.5">
-            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-            <p className="text-[10px] text-blue-200 mt-1 text-right">
+        <div key={index} className="flex justify-end mb-4 animate-[fadeIn_0.2s_ease-out]">
+          <div className="max-w-[80%] bg-gradient-to-tr from-indigo-600 to-purple-600 text-white rounded-2xl rounded-tr-sm px-4.5 py-3 shadow-[0_4px_12px_rgba(99,102,241,0.15)]">
+            <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium">{msg.content}</p>
+            <p className="text-[9px] text-indigo-200 mt-1.5 text-right font-medium">
               {formatTimestamp(msg.timestamp)}
             </p>
           </div>
@@ -155,15 +158,15 @@ export default function ChatPage() {
     if (index === 0 && messages.length === 1) {
       // Welcome message with suggestions
       return (
-        <div key={index} className="flex mb-4">
-          <div className="max-w-[85%] bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
-            <p className="text-sm text-gray-800 whitespace-pre-wrap">{msg.content}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+        <div key={index} className="flex mb-4 animate-[fadeIn_0.2s_ease-out]">
+          <div className="max-w-[85%] glass rounded-2xl rounded-bl-sm p-4 md:p-5 border border-zinc-800 shadow-lg">
+            <p className="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap font-medium">{msg.content}</p>
+            <div className="mt-4 flex flex-wrap gap-2.5">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
                   onClick={() => handleSuggestion(s)}
-                  className="text-xs bg-white border border-gray-200 rounded-full px-3 py-1 text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                  className="text-xs bg-zinc-900 border border-zinc-800 text-zinc-300 hover:border-indigo-500 hover:text-indigo-400 rounded-full px-3.5 py-1.5 transition-all font-medium duration-200"
                 >
                   {s}
                 </button>
@@ -186,15 +189,14 @@ export default function ChatPage() {
     }
 
     if (sources) {
-      // This is a hidden sources message — already rendered with the previous assistant message
       return null;
     }
 
     return (
-      <div key={index} className="flex mb-4">
-        <div className="max-w-[85%] bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
-          <p className="text-sm text-gray-800 whitespace-pre-wrap">{msg.content}</p>
-          <p className="text-[10px] text-gray-400 mt-1">
+      <div key={index} className="flex mb-4 animate-[fadeIn_0.2s_ease-out]">
+        <div className="max-w-[85%] glass rounded-2xl rounded-bl-sm px-4.5 py-3 border border-zinc-800/80 shadow-md">
+          <p className="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap font-medium">{msg.content}</p>
+          <p className="text-[9px] text-zinc-500 mt-2 font-medium">
             {formatTimestamp(msg.timestamp)}
           </p>
         </div>
@@ -202,7 +204,6 @@ export default function ChatPage() {
     );
   };
 
-  // Process messages to pair assistant replies with their source messages
   const pairedMessages: { msg: ChatMessage; sources: ChatSource[] | null }[] = [];
   for (let i = 0; i < messages.length; i++) {
     const msg = messages[i];
@@ -211,7 +212,6 @@ export default function ChatPage() {
       continue;
     }
 
-    // Try to parse the NEXT message as sources
     let sources: ChatSource[] | null = null;
     const nextMsg = messages[i + 1];
     if (nextMsg && nextMsg.role === "assistant") {
@@ -219,7 +219,7 @@ export default function ChatPage() {
         const parsed = JSON.parse(nextMsg.content);
         if (Array.isArray(parsed) && parsed.length > 0 && "label" in parsed[0]) {
           sources = parsed as ChatSource[];
-          i++; // skip the sources message
+          i++;
         }
       } catch {
         // not a sources message
@@ -230,19 +230,37 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="border-b border-gray-200 px-4 py-3">
-        <h1 className="text-sm font-semibold text-gray-800">Scaler AI Persona</h1>
-        <p className="text-xs text-gray-400">Grounded assistant for Deepanshu Chaudhary</p>
+    <div className="min-h-screen bg-[#09090b] text-[#fafafa] flex flex-col justify-between grid-bg relative">
+      <div className="absolute top-[-10%] right-[-10%] w-[35%] h-[35%] rounded-full bg-indigo-600/15 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[35%] h-[35%] rounded-full bg-purple-600/10 blur-[100px] pointer-events-none" />
+
+      {/* Header */}
+      <header className="border-b border-zinc-900 glass px-6 py-4 flex items-center justify-between z-10">
+        <div>
+          <h1 className="text-sm font-bold text-zinc-100 tracking-wide glow-text flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            Scaler AI Persona
+          </h1>
+          <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Grounded Assistant for Deepanshu Chaudhary</p>
+        </div>
+        <div>
+          <button
+            onClick={() => setMessages([WELCOME_MESSAGE])}
+            className="text-xs border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 bg-zinc-900 px-3 py-1.5 rounded-lg transition-all"
+          >
+            Clear Chat
+          </button>
+        </div>
       </header>
 
-      <div ref={listRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+      {/* Message List */}
+      <div ref={listRef} className="flex-1 overflow-y-auto px-6 py-6 space-y-3 z-10">
         {pairedMessages.map(({ msg, sources }, index) => (
           <div key={`paired-${index}`}>
             {renderMessage(msg, messages.indexOf(msg))}
-            {sources && msg.role === "assistant" && index === pairedMessages.length - 1 && (
+            {sources && msg.role === "assistant" && (
               <div className="flex mb-4">
-                <div className="max-w-[85%] ml-0">
+                <div className="max-w-[85%] w-full">
                   {renderSources(sources)}
                 </div>
               </div>
@@ -252,22 +270,22 @@ export default function ChatPage() {
 
         {loading && (
           <div className="flex mb-4">
-            <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+            <div className="glass rounded-2xl rounded-bl-sm px-4 py-3 border border-zinc-800">
+              <div className="flex gap-1.5 items-center py-1">
+                <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:300ms]" />
               </div>
             </div>
           </div>
         )}
 
         {error && (
-          <div className="border border-red-200 bg-red-50 rounded-lg px-4 py-3 mb-4">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="border border-red-500/20 bg-red-500/5 rounded-xl px-4 py-3 mb-4 flex justify-between items-center">
+            <p className="text-xs text-red-400 font-medium">{error}</p>
             <button
               onClick={() => setError(null)}
-              className="text-xs text-red-500 underline mt-1"
+              className="text-xs text-red-500 hover:text-red-400 underline font-medium"
             >
               Dismiss
             </button>
@@ -275,8 +293,8 @@ export default function ChatPage() {
         )}
 
         {bookingOpenIndex !== null && (
-          <div className="flex mb-4">
-            <div className="max-w-[85%]">
+          <div className="flex mb-4 animate-[fadeIn_0.2s_ease-out]">
+            <div className="max-w-[85%] w-full">
               <BookingForm
                 onClose={() => setBookingOpenIndex(null)}
               />
@@ -285,21 +303,22 @@ export default function ChatPage() {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t border-gray-200 px-4 py-3">
-        <div className="flex gap-2 items-end">
+      {/* Input Box */}
+      <form onSubmit={handleSubmit} className="border-t border-zinc-900 glass px-6 py-4 z-10">
+        <div className="flex gap-3 items-end max-w-4xl mx-auto">
           <textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask anything about Deepanshu..."
+            placeholder="Ask me anything about Deepanshu..."
             rows={1}
-            className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:border-blue-400 placeholder-gray-400"
+            className="flex-1 glass-input rounded-xl px-4 py-3 text-sm resize-none focus:outline-none placeholder-zinc-600 font-medium"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="px-5 py-2.5 bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-600 hover:to-purple-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_4px_12px_rgba(99,102,241,0.2)]"
           >
             Send
           </button>

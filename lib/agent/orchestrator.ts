@@ -1,5 +1,6 @@
 import type { AgentContext, AgentResponse } from "@/types";
 import { retrieve } from "@/lib/agent/retrieval-tool";
+import { generateResponse } from "@/lib/agent/llm";
 
 const BOOKING_KEYWORDS = [
   "book", "schedule", "call", "meeting", "appointment",
@@ -38,7 +39,7 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
   if (isGreeting(query)) {
     return {
       answer:
-        "Hi! I'm an AI assistant here to answer questions about Deepanshu's background, experience, and projects. You can ask me things like 'What experience does Deepanshu have?', 'Tell me about his projects', or 'What skills does he have?' — or you can book a call with him directly.",
+        "Hi! I'm Deepanshu's AI assistant here to answer questions about my background, experience, and projects. You can ask me things like 'What experience do you have?', 'Tell me about your projects', or 'What skills do you have?' — or you can book a call with me directly.",
       sources: [],
       metadata: { bookingAvailable: false, conversationId },
     };
@@ -49,7 +50,7 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
 
   if (result.rejected) {
     return {
-      answer: "I can only answer questions grounded in the candidate's resume and public GitHub repositories. Please ask something related to their background, experience, or projects.",
+      answer: "I can only answer questions grounded in my resume and public GitHub repositories. Please ask something related to my background, experience, or projects.",
       sources: [],
       metadata: { bookingAvailable: false, conversationId },
     };
@@ -57,7 +58,7 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
 
   if (result.results.length === 0 && !bookingIntent) {
     return {
-      answer: "I don't have information about that in the corpus. I can answer questions about Deepanshu's resume, projects, GitHub repositories, and availability. Could you try rephrasing or asking something else?",
+      answer: "I don't have information about that in my corpus. I can answer questions about my resume, projects, GitHub repositories, and availability. Could you try rephrasing or asking something else?",
       sources: [],
       metadata: { bookingAvailable: false, conversationId },
     };
@@ -65,17 +66,13 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
 
   if (result.results.length === 0 && bookingIntent) {
     return {
-      answer: "Yes, you can book a call with Deepanshu! Click the button below to request a slot.",
+      answer: "Yes, you can book a call with me! Click the button below to request a slot.",
       sources: [],
       metadata: { bookingAvailable: true, conversationId },
     };
   }
 
-  const topResult = result.results[0];
-  const prefix = result.fallback
-    ? "Based on the available information:"
-    : `Based on the ${topResult.source}:`;
-  const reply = `${prefix}\n\n${topResult.content}`;
+  const reply = await generateResponse(query, result.results);
 
   return {
     answer: reply,
