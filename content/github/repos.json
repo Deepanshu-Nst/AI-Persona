@@ -1,0 +1,76 @@
+{
+  "repos": [
+    {
+      "name": "FitCheck",
+      "description": "Built FitCheck as a full-stack fashion-tech mobile application inspired by real consumer styling workflows. Users can upload outfit images, receive AI-generated feedback, manage their profile and style preferences, and interact with a production-style mobile experience built using React Native, Node.js, TypeScript, Supabase, and AI APIs.",
+      "url": "https://github.com/Deepanshu-Nst/FitCheck",
+      "language": "TypeScript",
+      "stars": 0,
+      "topics": ["react-native", "typescript", "supabase", "ai"]
+    },
+    {
+      "name": "Aforro-React-Dashboard",
+      "description": "Production-grade Sales Analytics Dashboard built with Next.js 15, TypeScript, TailwindCSS, TanStack Table, and Recharts featuring responsive analytics UI, interactive charts, advanced data tables with search/sort/filter, reusable architecture, and polished SaaS-style UX.",
+      "url": "https://github.com/Deepanshu-Nst/Aforro-React-Dashboard",
+      "language": "TypeScript",
+      "stars": 0,
+      "topics": ["nextjs", "typescript", "tailwindcss", "dashboard"]
+    },
+    {
+      "name": "Devasya-AI",
+      "description": "AI platform built with TypeScript and Next.js. Deployed at devasya-ai.vercel.app.",
+      "url": "https://github.com/Deepanshu-Nst/Devasya-AI",
+      "language": "TypeScript",
+      "stars": 0,
+      "topics": ["ai", "nextjs", "typescript"]
+    },
+    {
+      "name": "AdvaitAI-Single",
+      "description": "AI platform built with TypeScript and Next.js. Deployed at advait-ai-single.vercel.app.",
+      "url": "https://github.com/Deepanshu-Nst/AdvaitAI-Single",
+      "language": "TypeScript",
+      "stars": 0,
+      "topics": ["ai", "nextjs", "typescript"]
+    },
+    {
+      "name": "DailyMathsRiddle",
+      "description": "Daily math riddle application built with TypeScript and Next.js. Deployed at daily-maths-riddle.vercel.app.",
+      "url": "https://github.com/Deepanshu-Nst/DailyMathsRiddle",
+      "language": "TypeScript",
+      "stars": 0,
+      "topics": ["nextjs", "typescript", "math"]
+    },
+    {
+      "name": "SectionE_G-4_UK-Road-Safety",
+      "description": "Data science project analyzing UK road safety data using Python, Pandas, and Jupyter Notebook.",
+      "url": "https://github.com/Deepanshu-Nst/SectionE_G-4_UK-Road-Safety",
+      "language": "Jupyter Notebook",
+      "stars": 0,
+      "topics": ["data-science", "python", "jupyter"]
+    },
+    {
+      "name": "RealEstate-Voice-Agent",
+      "description": "Voice agent for real estate inquiries built with TypeScript, Next.js, and Twilio. Deployed at real-estate-voice-agent-steel.vercel.app.",
+      "url": "https://github.com/Deepanshu-Nst/RealEstate-Voice-Agent",
+      "language": "TypeScript",
+      "stars": 0,
+      "topics": ["voice-agent", "twilio", "nextjs", "typescript"]
+    },
+    {
+      "name": "Drap-AI",
+      "description": "AI platform built with TypeScript and Next.js. Deployed at drap-ai-rose.vercel.app.",
+      "url": "https://github.com/Deepanshu-Nst/Drap-AI",
+      "language": "TypeScript",
+      "stars": 0,
+      "topics": ["ai", "nextjs", "typescript"]
+    },
+    {
+      "name": "advait-squarespace-sections",
+      "description": "Squarespace sections project built with TypeScript.",
+      "url": "https://github.com/Deepanshu-Nst/advait-squarespace-sections",
+      "language": "TypeScript",
+      "stars": 0,
+      "topics": ["squarespace", "typescript"]
+    }
+  ]
+}

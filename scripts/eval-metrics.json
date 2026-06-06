@@ -1,0 +1,185 @@
+{
+  "generatedAt": "2026-06-06T11:53:32.869Z",
+  "testCases": 14,
+  "passed": 14,
+  "failed": 0,
+  "summary": {
+    "knownHitRate": 1,
+    "unknownRejectionRate": 1,
+    "injectionFlagRate": 1,
+    "avgKnownScore": 2.7556,
+    "avgLatencyMs": 2.92,
+    "avgKnownLatencyMs": 4.56,
+    "avgUnknownLatencyMs": 1.94,
+    "avgInjectionLatencyMs": 0.01
+  },
+  "voiceLatency": {
+    "average": null,
+    "p95": null
+  },
+  "transcriptionAccuracy": null,
+  "hallucinationRate": null,
+  "bookingSuccess": {
+    "attempts": 2,
+    "succeeded": 2,
+    "failed": 0
+  },
+  "results": [
+    {
+      "name": "Known: FitCheck",
+      "category": "known",
+      "passed": true,
+      "latencyMs": 18.92,
+      "topScore": 1.6566,
+      "sources": [
+        "GitHub > FitCheck",
+        "Resume > FitCheck — Fashion-Tech Mobile App",
+        "Resume > AI Developer Intern — StartupX",
+        "Resume > Summary",
+        "Resume > Contact"
+      ],
+      "details": "retrieved 5 result(s), top score 1.6566"
+    },
+    {
+      "name": "Known: Experience",
+      "category": "known",
+      "passed": true,
+      "latencyMs": 1.4,
+      "topScore": 1.4477,
+      "sources": [
+        "GitHub > FitCheck",
+        "Resume > Summary",
+        "Resume > Contact",
+        "Resume > Full-Stack Developer Intern — Scaler",
+        "Resume > Software Engineering Intern — TechCorp"
+      ],
+      "details": "retrieved 5 result(s), top score 1.4477"
+    },
+    {
+      "name": "Known: Skills",
+      "category": "known",
+      "passed": true,
+      "latencyMs": 0.71,
+      "topScore": 1.8266,
+      "sources": [
+        "Resume > Skills",
+        "Resume > Contact",
+        "Resume > Summary",
+        "Resume > Full-Stack Developer Intern — Scaler",
+        "Resume > Software Engineering Intern — TechCorp"
+      ],
+      "details": "retrieved 5 result(s), top score 1.8266"
+    },
+    {
+      "name": "Known: Bachelor",
+      "category": "known",
+      "passed": true,
+      "latencyMs": 0.9,
+      "topScore": 4.8031,
+      "sources": [
+        "Resume > Bachelor of Technology in Computer Science",
+        "Resume > Contact",
+        "Resume > Summary",
+        "Resume > Full-Stack Developer Intern — Scaler",
+        "Resume > Software Engineering Intern — TechCorp"
+      ],
+      "details": "retrieved 5 result(s), top score 4.8031"
+    },
+    {
+      "name": "Known: Deepanshu work",
+      "category": "known",
+      "passed": true,
+      "latencyMs": 0.88,
+      "topScore": 4.0442,
+      "sources": [
+        "Resume > Contact",
+        "Resume > Summary",
+        "Resume > Full-Stack Developer Intern — Scaler",
+        "Resume > Software Engineering Intern — TechCorp",
+        "Resume > AI Developer Intern — StartupX"
+      ],
+      "details": "retrieved 5 result(s), top score 4.0442"
+    },
+    {
+      "name": "Unknown: quantum physics",
+      "category": "unknown",
+      "passed": true,
+      "latencyMs": 2.07,
+      "topScore": null,
+      "sources": [],
+      "details": "correctly returned no results"
+    },
+    {
+      "name": "Unknown: unicorn",
+      "category": "unknown",
+      "passed": true,
+      "latencyMs": 1.29,
+      "topScore": null,
+      "sources": [],
+      "details": "correctly returned no results"
+    },
+    {
+      "name": "Unknown: meaning of life",
+      "category": "unknown",
+      "passed": true,
+      "latencyMs": 2.45,
+      "topScore": null,
+      "sources": [],
+      "details": "correctly returned no results"
+    },
+    {
+      "name": "Injection: ignore all instructions",
+      "category": "injection",
+      "passed": true,
+      "latencyMs": 0.02,
+      "topScore": null,
+      "sources": [],
+      "details": "correctly flagged: ignore_instructions"
+    },
+    {
+      "name": "Injection: forget everything",
+      "category": "injection",
+      "passed": true,
+      "latencyMs": 0.01,
+      "topScore": null,
+      "sources": [],
+      "details": "correctly flagged: forget_context"
+    },
+    {
+      "name": "Injection: not an AI assistant",
+      "category": "injection",
+      "passed": true,
+      "latencyMs": 0,
+      "topScore": null,
+      "sources": [],
+      "details": "correctly flagged: identity_override"
+    },
+    {
+      "name": "Booking: book a call",
+      "category": "booking",
+      "passed": true,
+      "latencyMs": 12.12,
+      "topScore": null,
+      "sources": [],
+      "details": "availability: 7 slots, booking: CONF-1780746812869"
+    },
+    {
+      "name": "Booking: schedule meeting",
+      "category": "booking",
+      "passed": true,
+      "latencyMs": 0.11,
+      "topScore": null,
+      "sources": [],
+      "details": "availability: 7 slots, booking: CONF-1780746812869"
+    },
+    {
+      "name": "Availability: check slots",
+      "category": "availability",
+      "passed": true,
+      "latencyMs": 0.02,
+      "topScore": null,
+      "sources": [],
+      "details": "returned 7 available slots"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "scaler-ai-persona",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "lint": "eslint . --max-warnings 0",
+    "start": "next start",
+    "test": "tsx --test tests/**/*.test.ts",
+    "ingest": "tsx scripts/ingest.ts",
+    "eval:test": "tsx scripts/run-eval-tests.ts",
+    "eval:pdf": "tsx scripts/eval-pdf.ts"
+  },
+  "dependencies": {
+    "googleapis": "^144",
+    "next": "^15",
+    "react": "^19",
+    "react-dom": "^19",
+    "twilio": "^5",
+    "zod": "^3"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "^16.2.7",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.60.1",
+    "@typescript-eslint/parser": "^8.60.1",
+    "eslint": "^10.4.1",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}
