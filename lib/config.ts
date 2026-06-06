@@ -16,17 +16,15 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
-let _config: Env | null = null;
-
+// Do NOT cache config — on Vercel serverless each invocation may have fresh env
 export function getConfig(): Env {
-  if (_config) return _config;
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
     console.warn(
       "Invalid or missing environment variables:",
       result.error.flatten().fieldErrors,
     );
+    return envSchema.parse({});
   }
-  _config = result.success ? result.data : envSchema.parse({});
-  return _config;
+  return result.data;
 }

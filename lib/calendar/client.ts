@@ -76,16 +76,44 @@ function generateMockSlots(date: string): TimeSlot[] {
   return slots;
 }
 
-export class CalendarClient {
-  private auth = getConfig().GOOGLE_CLIENT_EMAIL && getConfig().GOOGLE_PRIVATE_KEY
-    ? new google.auth.JWT({
-        email: getConfig().GOOGLE_CLIENT_EMAIL!.replace(/^["']|["']$/g, ""),
-        key: getConfig().GOOGLE_PRIVATE_KEY!.replace(/^["']|["']$/g, "").replace(/\\n/g, "\n"),
-        scopes: ["https://www.googleapis.com/auth/calendar"],
-      })
-    : null;
+function normalizePrivateKey(raw: string): string {
+  // Strip surrounding quotes if present
+  let key = raw.replace(/^["']|["']$/g, "");
+  // Replace literal \n sequences with real newlines (handles both Vercel and local .env formats)
+  key = key.replace(/\\n/g, "\n");
+  return key;
+}
 
-  private calendar = this.auth ? google.calendar({ version: "v3", auth: this.auth }) : null;
+export class CalendarClient {
+  private _auth: InstanceType<typeof google.auth.JWT> | null = null;
+  private _calendar: ReturnType<typeof google.calendar> | null = null;
+
+  private getAuth() {
+    if (this._auth) return this._auth;
+    const config = getConfig();
+    if (!config.GOOGLE_CLIENT_EMAIL || !config.GOOGLE_PRIVATE_KEY) return null;
+    const email = config.GOOGLE_CLIENT_EMAIL.replace(/^["']|["']$/g, "");
+    const key = normalizePrivateKey(config.GOOGLE_PRIVATE_KEY);
+    console.log("CalendarClient: initializing JWT auth", {
+      email,
+      keyLines: key.split("\n").length,
+      keyStart: key.slice(0, 30),
+    });
+    this._auth = new google.auth.JWT({
+      email,
+      key,
+      scopes: ["https://www.googleapis.com/auth/calendar"],
+    });
+    return this._auth;
+  }
+
+  private getCalendar() {
+    if (this._calendar) return this._calendar;
+    const auth = this.getAuth();
+    if (!auth) return null;
+    this._calendar = google.calendar({ version: "v3", auth });
+    return this._calendar;
+  }
 
   async checkAvailability(date: string): Promise<TimeSlot[]> {
     const config = getConfig();
@@ -99,12 +127,12 @@ export class CalendarClient {
       return [];
     }
 
-    if (!this.calendar || !config.GOOGLE_CALENDAR_ID) {
+    const calendar = this.getCalendar();
+    if (!calendar || !config.GOOGLE_CALENDAR_ID) {
       const slots = generateMockSlots(date);
       console.log("checkAvailability generated mock slots (no credentials):", {
         date,
         slotsCount: slots.length,
-        slots,
       });
       return slots;
     }
@@ -125,7 +153,7 @@ export class CalendarClient {
         calendarId: config.GOOGLE_CALENDAR_ID,
       });
 
-      const res = await this.calendar.freebusy.query({
+      const res = await calendar.freebusy.query({
         requestBody: {
           timeMin: dayStart.toISOString(),
           timeMax: dayEnd.toISOString(),
@@ -174,7 +202,8 @@ export class CalendarClient {
 
     console.log("createEvent input params:", params);
 
-    if (!this.calendar || !config.GOOGLE_CALENDAR_ID) {
+    const calendar = this.getCalendar();
+    if (!calendar || !config.GOOGLE_CALENDAR_ID) {
       const mockId = "mock-" + Date.now();
       console.log("No Google Calendar credentials. Created mock event:", { mockId });
       return { id: mockId };
@@ -197,7 +226,7 @@ export class CalendarClient {
         ];
       }
 
-      const event = await this.calendar.events.insert({
+      const event = await calendar.events.insert({
         calendarId: config.GOOGLE_CALENDAR_ID,
         sendUpdates: "all",
         requestBody,
