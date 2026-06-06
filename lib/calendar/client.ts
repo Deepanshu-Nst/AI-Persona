@@ -13,8 +13,6 @@ export interface CalendarEvent {
 
 const SESSION_TTL = 10 * 60 * 1000;
 
-const cachedSlots = new Map<string, { slots: TimeSlot[]; fetchedAt: number }>();
-
 function esc(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -136,12 +134,6 @@ export class CalendarClient {
     }
 
     try {
-      const cached = cachedSlots.get(date);
-      if (cached && Date.now() - cached.fetchedAt < SESSION_TTL) {
-        console.log("checkAvailability cache hit:", { date, slotsCount: cached.slots.length });
-        return cached.slots;
-      }
-
       const dayStart = parseIstDateOnly(date);
       const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000 - 1000); // end of day
 
@@ -174,7 +166,6 @@ export class CalendarClient {
         slots: freeSlots,
       });
 
-      cachedSlots.set(date, { slots: freeSlots, fetchedAt: Date.now() });
       return freeSlots;
     } catch (err) {
       console.error("Google Calendar freebusy query failed. Falling back to mock slots.", err);
@@ -238,10 +229,7 @@ export class CalendarClient {
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.error("Google Calendar event insertion failed:", errMsg);
-      // Fallback to mock event so the UI booking flow still completes
-      const mockId = "mock-" + Date.now();
-      console.log("Returning fallback mock event:", { mockId });
-      return { id: mockId };
+      throw new Error(`Google Calendar event insertion failed: ${errMsg}`);
     }
   }
 
