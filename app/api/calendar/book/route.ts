@@ -14,12 +14,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Require either slotIso or date+time
+    if (!parsed.data.slotIso && (!parsed.data.date || !parsed.data.time)) {
+      return NextResponse.json(
+        { error: "Either slotIso or both date and time must be provided" },
+        { status: 400 },
+      );
+    }
+
     const result = await bookSlot({
+      slotIso: parsed.data.slotIso,
       date: parsed.data.date,
       time: parsed.data.time,
       duration: parsed.data.duration,
       attendeeEmail: parsed.data.attendeeEmail,
       attendeeName: parsed.data.attendeeName,
+      message: parsed.data.message,
     });
 
     if (!result.success) {

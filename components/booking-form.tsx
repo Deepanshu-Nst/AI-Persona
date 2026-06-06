@@ -39,7 +39,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorText, setErrorText] = useState("");
 
-  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedSlotIso, setSelectedSlotIso] = useState("");
   const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string }[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
@@ -50,7 +50,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(normalizedDate)) {
         setAvailableSlots([]);
-        setSelectedTime("");
+        setSelectedSlotIso("");
         setHasFetched(false);
         return;
       }
@@ -69,18 +69,11 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
         console.log("BookingForm: retrieved available slots from API:", slots);
         setAvailableSlots(slots);
         
-        // Auto-select first available slot
+        // Auto-select first available slot using raw ISO
         if (slots.length > 0) {
-          const startDate = new Date(slots[0].start);
-          const timeValue = startDate.toLocaleTimeString("en-GB", {
-            timeZone: "Asia/Kolkata",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          });
-          setSelectedTime(timeValue);
+          setSelectedSlotIso(slots[0].start);
         } else {
-          setSelectedTime("");
+          setSelectedSlotIso("");
         }
         setHasFetched(true);
       } catch (err) {
@@ -101,7 +94,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
     setEmail("");
     setDate("");
     setMessage("");
-    setSelectedTime("");
+    setSelectedSlotIso("");
     setAvailableSlots([]);
     setSubmitting(false);
     setStatus("idle");
@@ -116,10 +109,10 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
       name,
       email,
       date: normalizedDate,
-      time: selectedTime,
+      slotIso: selectedSlotIso,
       message,
     });
-    if (!name.trim() || !email.trim() || !normalizedDate.trim() || !selectedTime.trim()) {
+    if (!name.trim() || !email.trim() || !normalizedDate.trim() || !selectedSlotIso.trim()) {
       setErrorText("Name, email, date, and time slot are required.");
       return;
     }
@@ -134,7 +127,8 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
           attendeeName: name,
           attendeeEmail: email,
           date: normalizedDate,
-          time: selectedTime,
+          slotIso: selectedSlotIso, // send raw ISO - no locale conversion issues
+          duration: 30,
           message,
         }),
       });
@@ -219,19 +213,13 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
                   hour: "numeric",
                   minute: "2-digit",
                 });
-                const timeValue = startDate.toLocaleTimeString("en-GB", {
-                  timeZone: "Asia/Kolkata",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                });
-                const isSelected = selectedTime === timeValue;
+                const isSelected = selectedSlotIso === slot.start;
 
                 return (
                   <button
                     key={i}
                     type="button"
-                    onClick={() => setSelectedTime(timeValue)}
+                    onClick={() => setSelectedSlotIso(slot.start)}
                     className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-150 ${
                       isSelected
                         ? "bg-zinc-100 border-zinc-100 text-zinc-900 shadow-sm"
@@ -267,7 +255,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
       <div className="flex gap-2.5 pt-2">
         <button
           type="submit"
-          disabled={submitting || !name.trim() || !email.trim() || !date.trim() || !selectedTime}
+          disabled={submitting || !name.trim() || !email.trim() || !date.trim() || !selectedSlotIso}
           className="px-5 py-2.5 bg-zinc-100 text-zinc-900 text-xs font-bold rounded-xl hover:bg-white disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-500 transition-all shadow-sm"
         >
           {submitting ? "Submitting..." : "Confirm Slot"}

@@ -181,19 +181,11 @@ export class CalendarClient {
     }
 
     try {
-      const requestBody: any = {
+      const requestBody: Record<string, unknown> = {
         summary: params.summary,
         description: params.description,
-        start: { dateTime: params.start },
-        end: { dateTime: params.end },
-        conferenceData: {
-          createRequest: {
-            requestId: `meet-${Date.now()}`,
-            conferenceSolutionKey: {
-              type: "hangoutsMeet",
-            },
-          },
-        },
+        start: { dateTime: params.start, timeZone: "UTC" },
+        end: { dateTime: params.end, timeZone: "UTC" },
       };
 
       if (params.attendeeEmail) {
@@ -207,18 +199,21 @@ export class CalendarClient {
 
       const event = await this.calendar.events.insert({
         calendarId: config.GOOGLE_CALENDAR_ID,
-        conferenceDataVersion: 1,
         sendUpdates: "all",
         requestBody,
       });
 
-      console.log("Google Calendar event created successfully:", event.data);
+      console.log("Google Calendar event created successfully:", {
+        id: event.data.id,
+        htmlLink: event.data.htmlLink,
+      });
       return { id: event.data.id ?? "unknown", htmlLink: event.data.htmlLink ?? undefined };
     } catch (err) {
-      console.error("Google Calendar event insertion failed:", err);
-      // Fallback to mock event instead of failing completely to ensure UI continues working
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error("Google Calendar event insertion failed:", errMsg);
+      // Fallback to mock event so the UI booking flow still completes
       const mockId = "mock-" + Date.now();
-      console.log("Google Calendar insertion failed. Created fallback mock event:", { mockId });
+      console.log("Returning fallback mock event:", { mockId });
       return { id: mockId };
     }
   }

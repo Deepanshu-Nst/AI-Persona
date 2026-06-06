@@ -29,11 +29,13 @@ export const TimeSlotSchema = z.object({
 });
 
 export const BookingRequestSchema = z.object({
-  date: z.string().transform(normalizeDate),
-  time: z.string(),
+  date: z.string().transform(normalizeDate).optional(),
+  time: z.string().optional(),
+  slotIso: z.string().optional(), // ISO start time sent directly from UI
   duration: z.number().positive().default(30),
   attendeeEmail: z.string().email().optional(),
   attendeeName: z.string().optional(),
+  message: z.string().optional(),
 });
 
 export const AvailabilityRequestSchema = z.object({

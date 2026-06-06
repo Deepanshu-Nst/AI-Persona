@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-06T14:46:18.691Z",
+  "generatedAt": "2026-06-06T16:00:28.524Z",
   "testCases": 17,
   "passed": 17,
   "failed": 0,
@@ -9,9 +9,9 @@
     "injectionFlagRate": 1,
     "fallbackPassRate": 1,
     "avgKnownScore": 4.3824,
-    "avgLatencyMs": 1.12,
-    "avgKnownLatencyMs": 2.66,
-    "avgUnknownLatencyMs": 0.77,
+    "avgLatencyMs": 2.04,
+    "avgKnownLatencyMs": 4.27,
+    "avgUnknownLatencyMs": 2.92,
     "avgInjectionLatencyMs": 0.01
   },
   "voiceLatency": {
@@ -30,7 +30,7 @@
       "name": "Known: FitCheck",
       "category": "known",
       "passed": true,
-      "latencyMs": 5.63,
+      "latencyMs": 6.31,
       "topScore": 2.753,
       "sources": [
         "GitHub > FitCheck",
@@ -45,7 +45,7 @@
       "name": "Known: Experience",
       "category": "known",
       "passed": true,
-      "latencyMs": 3.38,
+      "latencyMs": 4.26,
       "topScore": 2.4038,
       "sources": [
         "Resume > EXPERIENCE",
@@ -60,7 +60,7 @@
       "name": "Known: Skills",
       "category": "known",
       "passed": true,
-      "latencyMs": 2.66,
+      "latencyMs": 6.46,
       "topScore": 4.8141,
       "sources": [
         "Resume > SKILLS",
@@ -75,7 +75,7 @@
       "name": "Known: Bachelor",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.84,
+      "latencyMs": 2.78,
       "topScore": 8.8243,
       "sources": [
         "Resume > EDUCATION",
@@ -90,7 +90,7 @@
       "name": "Known: Deepanshu work",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.77,
+      "latencyMs": 1.53,
       "topScore": 3.1169,
       "sources": [
         "Resume > Deepanshu Chaudhary",
@@ -105,7 +105,7 @@
       "name": "Unknown: quantum physics",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.76,
+      "latencyMs": 0.95,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -114,7 +114,7 @@
       "name": "Unknown: unicorn",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.61,
+      "latencyMs": 1.49,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -123,7 +123,7 @@
       "name": "Unknown: meaning of life",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.94,
+      "latencyMs": 6.31,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -132,7 +132,7 @@
       "name": "Injection: ignore all instructions",
       "category": "injection",
       "passed": true,
-      "latencyMs": 0.01,
+      "latencyMs": 0.02,
       "topScore": null,
       "sources": [],
       "details": "correctly flagged: ignore_instructions"
@@ -159,25 +159,25 @@
       "name": "Booking: book a call",
       "category": "booking",
       "passed": true,
-      "latencyMs": 1.02,
+      "latencyMs": 1.13,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780757178688"
+      "details": "availability: 7 slots, booking: CONF-1780761628520"
     },
     {
       "name": "Booking: schedule meeting",
       "category": "booking",
       "passed": true,
-      "latencyMs": 0.1,
+      "latencyMs": 0.18,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780757178689"
+      "details": "availability: 7 slots, booking: CONF-1780761628521"
     },
     {
       "name": "Availability: check slots",
       "category": "availability",
       "passed": true,
-      "latencyMs": 0.06,
+      "latencyMs": 0.26,
       "topScore": null,
       "sources": [],
       "details": "returned 7 available slots"
@@ -186,7 +186,7 @@
       "name": "Fallback: generic projects",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.94,
+      "latencyMs": 1.1,
       "topScore": 5.1464,
       "sources": [
         "Resume > PROJECTS",
@@ -201,7 +201,7 @@
       "name": "Fallback: generic experience",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.67,
+      "latencyMs": 1.05,
       "topScore": 3.1169,
       "sources": [
         "Resume > Deepanshu Chaudhary",
@@ -216,7 +216,7 @@
       "name": "Fallback: skills request",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.61,
+      "latencyMs": 0.85,
       "topScore": 4.8141,
       "sources": [
         "Resume > SKILLS",
