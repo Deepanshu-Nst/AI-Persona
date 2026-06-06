@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, type FormEvent, type KeyboardEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Search, Bot, User, ArrowRight, Loader2, Calendar } from "lucide-react";
+import { Send, Search, Bot, User, ArrowRight, Loader2, Calendar, FileText } from "lucide-react";
 import clsx from "clsx";
 import type { ChatMessage, ChatSource, ChatResponse } from "@/types";
 import { BookingForm } from "@/components/booking-form";
@@ -224,7 +224,7 @@ export default function AppCanvas() {
                     <div className="flex flex-col w-full prose-custom text-[15px] text-zinc-300">
                       {msg.sources && msg.sources.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-3">
-                          {msg.sources.map((s, i) => (
+                          {msg.sources.map((s: ChatSource, i: number) => (
                             <div key={i} className="group relative">
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-400 cursor-default hover:text-zinc-200 hover:border-zinc-600 transition-colors">
                                 {s.label.includes("GitHub") ? <Search size={12} /> : <FileText size={12} />}

@@ -1,7 +1,7 @@
 import { retrieve } from "@/lib/agent/retrieval-tool";
 import { getAvailability } from "@/lib/agent/availability-tool";
 import { bookSlot } from "@/lib/agent/booking-tool";
-import { generateResponse } from "@/lib/agent/llm";
+import { generateStreamingResponse } from "@/lib/agent/llm";
 import type { VoiceSession } from "@/lib/twilio/session";
 
 const BOOKING_KEYWORDS = [
@@ -215,7 +215,8 @@ export async function handleVoiceQuery(
       };
     }
 
-    const reply = await generateResponse(transcript, result.results);
+    const streamResult = await generateStreamingResponse(transcript, result.results);
+    const reply = await streamResult.text;
     const text = reply
       .replace(/#+\s*/g, "")
       .replace(/\n+/g, " ")

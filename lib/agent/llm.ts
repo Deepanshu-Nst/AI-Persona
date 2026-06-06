@@ -220,7 +220,6 @@ User Query: ${query}`;
     model,
     prompt: systemPrompt,
     temperature: 0.15,
-    maxTokens: 350,
     onFinish: ({ text }) => {
       if (conversationId) {
         import("./memory").then(({ updateMemory }) => {

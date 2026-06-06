@@ -1,6 +1,6 @@
 import type { AgentContext, AgentResponse } from "@/types";
 import { retrieve } from "@/lib/agent/retrieval-tool";
-import { generateResponse } from "@/lib/agent/llm";
+import { generateStreamingResponse } from "@/lib/agent/llm";
 import { getMemory, updateMemory } from "@/lib/agent/memory";
 
 const BOOKING_KEYWORDS = [
