@@ -1,16 +1,17 @@
 {
-  "generatedAt": "2026-06-06T11:53:32.869Z",
-  "testCases": 14,
-  "passed": 14,
+  "generatedAt": "2026-06-06T13:01:06.469Z",
+  "testCases": 17,
+  "passed": 17,
   "failed": 0,
   "summary": {
     "knownHitRate": 1,
     "unknownRejectionRate": 1,
     "injectionFlagRate": 1,
-    "avgKnownScore": 2.7556,
-    "avgLatencyMs": 2.92,
-    "avgKnownLatencyMs": 4.56,
-    "avgUnknownLatencyMs": 1.94,
+    "fallbackPassRate": 1,
+    "avgKnownScore": 3.6821,
+    "avgLatencyMs": 1.98,
+    "avgKnownLatencyMs": 5.11,
+    "avgUnknownLatencyMs": 1.11,
     "avgInjectionLatencyMs": 0.01
   },
   "voiceLatency": {
@@ -29,7 +30,7 @@
       "name": "Known: FitCheck",
       "category": "known",
       "passed": true,
-      "latencyMs": 18.92,
+      "latencyMs": 21.66,
       "topScore": 1.6566,
       "sources": [
         "GitHub > FitCheck",
@@ -44,38 +45,38 @@
       "name": "Known: Experience",
       "category": "known",
       "passed": true,
-      "latencyMs": 1.4,
-      "topScore": 1.4477,
+      "latencyMs": 1.44,
+      "topScore": 1.8521,
       "sources": [
-        "GitHub > FitCheck",
         "Resume > Summary",
+        "GitHub > FitCheck",
         "Resume > Contact",
         "Resume > Full-Stack Developer Intern — Scaler",
         "Resume > Software Engineering Intern — TechCorp"
       ],
-      "details": "retrieved 5 result(s), top score 1.4477"
+      "details": "retrieved 5 result(s), top score 1.8521"
     },
     {
       "name": "Known: Skills",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.71,
-      "topScore": 1.8266,
+      "latencyMs": 0.93,
+      "topScore": 3.6531,
       "sources": [
         "Resume > Skills",
-        "Resume > Contact",
-        "Resume > Summary",
-        "Resume > Full-Stack Developer Intern — Scaler",
-        "Resume > Software Engineering Intern — TechCorp"
+        "Resume > FitCheck — Fashion-Tech Mobile App",
+        "Resume > AI Developer Intern — StartupX",
+        "GitHub > FitCheck",
+        "Resume > Summary"
       ],
-      "details": "retrieved 5 result(s), top score 1.8266"
+      "details": "retrieved 5 result(s), top score 3.6531"
     },
     {
       "name": "Known: Bachelor",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.9,
-      "topScore": 4.8031,
+      "latencyMs": 0.71,
+      "topScore": 7.2047,
       "sources": [
         "Resume > Bachelor of Technology in Computer Science",
         "Resume > Contact",
@@ -83,13 +84,13 @@
         "Resume > Full-Stack Developer Intern — Scaler",
         "Resume > Software Engineering Intern — TechCorp"
       ],
-      "details": "retrieved 5 result(s), top score 4.8031"
+      "details": "retrieved 5 result(s), top score 7.2047"
     },
     {
       "name": "Known: Deepanshu work",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.88,
+      "latencyMs": 0.82,
       "topScore": 4.0442,
       "sources": [
         "Resume > Contact",
@@ -104,7 +105,7 @@
       "name": "Unknown: quantum physics",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 2.07,
+      "latencyMs": 1.45,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -113,7 +114,7 @@
       "name": "Unknown: unicorn",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 1.29,
+      "latencyMs": 0.85,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -122,7 +123,7 @@
       "name": "Unknown: meaning of life",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 2.45,
+      "latencyMs": 1.04,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -131,7 +132,7 @@
       "name": "Injection: ignore all instructions",
       "category": "injection",
       "passed": true,
-      "latencyMs": 0.02,
+      "latencyMs": 0.01,
       "topScore": null,
       "sources": [],
       "details": "correctly flagged: ignore_instructions"
@@ -158,19 +159,19 @@
       "name": "Booking: book a call",
       "category": "booking",
       "passed": true,
-      "latencyMs": 12.12,
+      "latencyMs": 1.26,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780746812869"
+      "details": "availability: 7 slots, booking: CONF-1780750866465"
     },
     {
       "name": "Booking: schedule meeting",
       "category": "booking",
       "passed": true,
-      "latencyMs": 0.11,
+      "latencyMs": 0.02,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780746812869"
+      "details": "availability: 7 slots, booking: CONF-1780750866465"
     },
     {
       "name": "Availability: check slots",
@@ -180,6 +181,51 @@
       "topScore": null,
       "sources": [],
       "details": "returned 7 available slots"
+    },
+    {
+      "name": "Fallback: generic projects",
+      "category": "fallback",
+      "passed": true,
+      "latencyMs": 1.57,
+      "topScore": 4.0442,
+      "sources": [
+        "Resume > Contact",
+        "Resume > Achievements",
+        "Resume > Bachelor of Technology in Computer Science",
+        "Resume > Summary",
+        "Resume > Full-Stack Developer Intern — Scaler"
+      ],
+      "details": "retrieved 5 result(s), top score 4.0442"
+    },
+    {
+      "name": "Fallback: generic experience",
+      "category": "fallback",
+      "passed": true,
+      "latencyMs": 1.15,
+      "topScore": 4.0442,
+      "sources": [
+        "Resume > Contact",
+        "Resume > Summary",
+        "GitHub > FitCheck",
+        "Resume > Full-Stack Developer Intern — Scaler",
+        "Resume > Software Engineering Intern — TechCorp"
+      ],
+      "details": "retrieved 5 result(s), top score 4.0442"
+    },
+    {
+      "name": "Fallback: skills request",
+      "category": "fallback",
+      "passed": true,
+      "latencyMs": 0.67,
+      "topScore": 4.0442,
+      "sources": [
+        "Resume > Contact",
+        "Resume > Skills",
+        "Resume > FitCheck — Fashion-Tech Mobile App",
+        "Resume > AI Developer Intern — StartupX",
+        "GitHub > FitCheck"
+      ],
+      "details": "retrieved 5 result(s), top score 4.0442"
     }
   ]
 }

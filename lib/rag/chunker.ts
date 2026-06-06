@@ -101,6 +101,25 @@ export function chunkRepos(
   });
 }
 
+export const FILLER_WORDS = new Set([
+  "tell", "me", "about", "what", "does", "have", "please",
+  "could", "can", "would", "just", "like", "know",
+]);
+
+export function expandSynonyms(query: string): string {
+  return query
+    .replace(/\bexperience\b/g, "experience work internships background")
+    .replace(/\bprojects?\b/gi, "projects apps repositories builds")
+    .replace(/\bskills?\b/gi, "skills tech stack technologies");
+}
+
+export function normalizeQuery(query: string): string {
+  const lower = query.toLowerCase().trim();
+  const expanded = expandSynonyms(lower);
+  const words = expanded.split(/\s+/).filter((w) => !FILLER_WORDS.has(w));
+  return words.join(" ");
+}
+
 export function tokenise(text: string): string[] {
   const stopWords = new Set([
     "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
