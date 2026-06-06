@@ -12,8 +12,16 @@ export async function loadCorpus(): Promise<CorpusChunk[]> {
     const raw = await readFile(CORPUS_PATH, "utf-8");
     const data = JSON.parse(raw);
     cached = data.chunks as CorpusChunk[];
+    console.log("corpus loaded:", {
+      path: CORPUS_PATH,
+      chunks: cached.length,
+    });
     return cached;
-  } catch {
+  } catch (err) {
+    console.error("corpus load failed:", {
+      path: CORPUS_PATH,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return [];
   }
 }

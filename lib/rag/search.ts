@@ -119,6 +119,12 @@ export async function search(
   scored.sort((a, b) => b.score - a.score);
 
   if (scored.length === 0 || scored[0].score <= MIN_SCORE) {
+    console.warn("search: zero scores", {
+      query,
+      normalizedQuery: normalized,
+      tokens: queryTokens,
+      chunkCount: chunks.length,
+    });
     return [];
   }
 

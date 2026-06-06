@@ -219,7 +219,7 @@ function generateHtml(m: Metrics): string {
     ${row("Average latency (all queries)", `${num(m.summary.avgLatencyMs, 1)}ms`)}
     ${row("Average latency (known queries)", `${num(m.summary.avgKnownLatencyMs, 1)}ms`)}
     ${row("Average latency (injection queries)", `${num(m.summary.avgInjectionLatencyMs, 1)}ms`)}
-    ${row("Corpus size", "25 chunks (16 resume + 9 GitHub repos)")}
+    ${row("Corpus size", "17 chunks (8 resume + 9 GitHub repos)")}
   </table>
 </div>
 

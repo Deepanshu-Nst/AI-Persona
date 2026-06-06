@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-06T13:01:06.469Z",
+  "generatedAt": "2026-06-06T13:17:08.617Z",
   "testCases": 17,
   "passed": 17,
   "failed": 0,
@@ -8,10 +8,10 @@
     "unknownRejectionRate": 1,
     "injectionFlagRate": 1,
     "fallbackPassRate": 1,
-    "avgKnownScore": 3.6821,
-    "avgLatencyMs": 1.98,
-    "avgKnownLatencyMs": 5.11,
-    "avgUnknownLatencyMs": 1.11,
+    "avgKnownScore": 3.2065,
+    "avgLatencyMs": 0.92,
+    "avgKnownLatencyMs": 2.19,
+    "avgUnknownLatencyMs": 0.75,
     "avgInjectionLatencyMs": 0.01
   },
   "voiceLatency": {
@@ -30,82 +30,82 @@
       "name": "Known: FitCheck",
       "category": "known",
       "passed": true,
-      "latencyMs": 21.66,
-      "topScore": 1.6566,
+      "latencyMs": 5.12,
+      "topScore": 2.753,
       "sources": [
         "GitHub > FitCheck",
-        "Resume > FitCheck — Fashion-Tech Mobile App",
-        "Resume > AI Developer Intern — StartupX",
-        "Resume > Summary",
-        "Resume > Contact"
+        "Resume > Deepanshu Chaudhary",
+        "Resume > PROFESSIONAL SUMMARY",
+        "Resume > EDUCATION",
+        "Resume > EXPERIENCE"
       ],
-      "details": "retrieved 5 result(s), top score 1.6566"
+      "details": "retrieved 5 result(s), top score 2.753"
     },
     {
       "name": "Known: Experience",
       "category": "known",
       "passed": true,
-      "latencyMs": 1.44,
-      "topScore": 1.8521,
+      "latencyMs": 1.77,
+      "topScore": 1.5124,
       "sources": [
-        "Resume > Summary",
         "GitHub > FitCheck",
-        "Resume > Contact",
-        "Resume > Full-Stack Developer Intern — Scaler",
-        "Resume > Software Engineering Intern — TechCorp"
+        "Resume > EXPERIENCE",
+        "Resume > Deepanshu Chaudhary",
+        "Resume > PROFESSIONAL SUMMARY",
+        "Resume > EDUCATION"
       ],
-      "details": "retrieved 5 result(s), top score 1.8521"
+      "details": "retrieved 5 result(s), top score 1.5124"
     },
     {
       "name": "Known: Skills",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.93,
-      "topScore": 3.6531,
+      "latencyMs": 2.18,
+      "topScore": 2.7671,
       "sources": [
-        "Resume > Skills",
-        "Resume > FitCheck — Fashion-Tech Mobile App",
-        "Resume > AI Developer Intern — StartupX",
         "GitHub > FitCheck",
-        "Resume > Summary"
+        "Resume > SKILLS",
+        "Resume > PROJECTS",
+        "Resume > PROFESSIONAL SUMMARY",
+        "Resume > Deepanshu Chaudhary"
       ],
-      "details": "retrieved 5 result(s), top score 3.6531"
+      "details": "retrieved 5 result(s), top score 2.7671"
     },
     {
       "name": "Known: Bachelor",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.71,
-      "topScore": 7.2047,
+      "latencyMs": 1.09,
+      "topScore": 5.8829,
       "sources": [
-        "Resume > Bachelor of Technology in Computer Science",
-        "Resume > Contact",
-        "Resume > Summary",
-        "Resume > Full-Stack Developer Intern — Scaler",
-        "Resume > Software Engineering Intern — TechCorp"
+        "Resume > EDUCATION",
+        "Resume > Deepanshu Chaudhary",
+        "Resume > PROFESSIONAL SUMMARY",
+        "Resume > EXPERIENCE",
+        "Resume > Founder & President August 2025 - Present"
       ],
-      "details": "retrieved 5 result(s), top score 7.2047"
+      "details": "retrieved 5 result(s), top score 5.8829"
     },
     {
       "name": "Known: Deepanshu work",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.82,
-      "topScore": 4.0442,
+      "latencyMs": 0.77,
+      "topScore": 3.1169,
       "sources": [
-        "Resume > Contact",
-        "Resume > Summary",
-        "Resume > Full-Stack Developer Intern — Scaler",
-        "Resume > Software Engineering Intern — TechCorp",
-        "Resume > AI Developer Intern — StartupX"
+        "Resume > Deepanshu Chaudhary",
+        "Resume > PROJECTS",
+        "Resume > PROFESSIONAL SUMMARY",
+        "Resume > EDUCATION",
+        "Resume > EXPERIENCE"
       ],
-      "details": "retrieved 5 result(s), top score 4.0442"
+      "details": "retrieved 5 result(s), top score 3.1169"
     },
     {
       "name": "Unknown: quantum physics",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 1.45,
+      "latencyMs": 0.78,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -114,7 +114,7 @@
       "name": "Unknown: unicorn",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.85,
+      "latencyMs": 0.69,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -123,7 +123,7 @@
       "name": "Unknown: meaning of life",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 1.04,
+      "latencyMs": 0.77,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -159,10 +159,10 @@
       "name": "Booking: book a call",
       "category": "booking",
       "passed": true,
-      "latencyMs": 1.26,
+      "latencyMs": 0.74,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780750866465"
+      "details": "availability: 7 slots, booking: CONF-1780751828615"
     },
     {
       "name": "Booking: schedule meeting",
@@ -171,13 +171,13 @@
       "latencyMs": 0.02,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780750866465"
+      "details": "availability: 7 slots, booking: CONF-1780751828616"
     },
     {
       "name": "Availability: check slots",
       "category": "availability",
       "passed": true,
-      "latencyMs": 0.02,
+      "latencyMs": 0.01,
       "topScore": null,
       "sources": [],
       "details": "returned 7 available slots"
@@ -186,46 +186,46 @@
       "name": "Fallback: generic projects",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 1.57,
-      "topScore": 4.0442,
+      "latencyMs": 0.6,
+      "topScore": 3.1169,
       "sources": [
-        "Resume > Contact",
-        "Resume > Achievements",
-        "Resume > Bachelor of Technology in Computer Science",
-        "Resume > Summary",
-        "Resume > Full-Stack Developer Intern — Scaler"
+        "Resume > Deepanshu Chaudhary",
+        "Resume > PROJECTS",
+        "Resume > PROFESSIONAL SUMMARY",
+        "Resume > EXPERIENCE",
+        "Resume > EDUCATION"
       ],
-      "details": "retrieved 5 result(s), top score 4.0442"
+      "details": "retrieved 5 result(s), top score 3.1169"
     },
     {
       "name": "Fallback: generic experience",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 1.15,
-      "topScore": 4.0442,
+      "latencyMs": 0.54,
+      "topScore": 3.1169,
       "sources": [
-        "Resume > Contact",
-        "Resume > Summary",
+        "Resume > Deepanshu Chaudhary",
         "GitHub > FitCheck",
-        "Resume > Full-Stack Developer Intern — Scaler",
-        "Resume > Software Engineering Intern — TechCorp"
+        "Resume > PROJECTS",
+        "Resume > EXPERIENCE",
+        "Resume > PROFESSIONAL SUMMARY"
       ],
-      "details": "retrieved 5 result(s), top score 4.0442"
+      "details": "retrieved 5 result(s), top score 3.1169"
     },
     {
       "name": "Fallback: skills request",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.67,
-      "topScore": 4.0442,
+      "latencyMs": 0.52,
+      "topScore": 3.5894,
       "sources": [
-        "Resume > Contact",
-        "Resume > Skills",
-        "Resume > FitCheck — Fashion-Tech Mobile App",
-        "Resume > AI Developer Intern — StartupX",
-        "GitHub > FitCheck"
+        "Resume > PROJECTS",
+        "Resume > Deepanshu Chaudhary",
+        "GitHub > FitCheck",
+        "Resume > SKILLS",
+        "Resume > PROFESSIONAL SUMMARY"
       ],
-      "details": "retrieved 5 result(s), top score 4.0442"
+      "details": "retrieved 5 result(s), top score 3.5894"
     }
   ]
 }

@@ -161,7 +161,7 @@ jaccard = |intersection(query, doc)| / |union(query, doc)|
 
 **Hybrid score**: `0.8 * BM25 + 0.2 * Jaccard`
 
-The index is built on every search call (25 chunks → negligible overhead). Results are filtered to only return chunks with score > 0.
+The index is built on every search call (17 chunks → negligible overhead). Results are filtered to only return chunks with score > 0.
 
 ### Tokeniser (`lib/rag/chunker.ts`)
 
@@ -187,7 +187,7 @@ Runs offline. Reads two source files:
 - **`content/resume.md`** — 16 chunks created by splitting on `#`, `##`, `###` headings (Contact, Summary, Experience sections, Projects, Skills, etc.)
 - **`content/github/repos.json`** — 9 chunks (one per repo) with name, description, language, stars, and topics
 
-Output: 25 chunks written to `corpus/chunks.json` (gitignored).
+Output: 17 chunks written to `corpus/chunks.json` (gitignored).
 
 ### Session Store (`lib/twilio/voice.ts`)
 
@@ -211,7 +211,7 @@ The most important architectural decision. Every answer is a verbatim retrieved 
 - **Zero hallucination** — there is no generative model to produce false information
 - **Zero per-query cost** — no API tokens consumed
 - **Zero prompt injection surface** — the guard only needs to detect 13 patterns
-- **Sub-millisecond latency** — BM25 on 25 chunks completes in < 2ms
+- **Sub-millisecond latency** — BM25 on 17 chunks completes in < 2ms
 
 The tradeoff is that answers read as retrieved text blocks, not natural dialogue. A future LLM paraphrasing layer could sit on top while keeping BM25 as the sole knowledge source.
 
