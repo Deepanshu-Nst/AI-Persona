@@ -46,6 +46,8 @@ export async function bookSlot(input: BookingInput): Promise<BookingResult> {
       description: input.attendeeEmail
         ? `Attendee: ${input.attendeeName ?? "Unknown"} (${input.attendeeEmail})`
         : undefined,
+      attendeeEmail: input.attendeeEmail,
+      attendeeName: input.attendeeName,
     });
 
     const code = event.id.startsWith("mock-")

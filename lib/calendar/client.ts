@@ -167,6 +167,8 @@ export class CalendarClient {
     start: string;
     end: string;
     description?: string;
+    attendeeEmail?: string;
+    attendeeName?: string;
   }): Promise<CalendarEvent> {
     const config = getConfig();
 
@@ -179,14 +181,35 @@ export class CalendarClient {
     }
 
     try {
+      const requestBody: any = {
+        summary: params.summary,
+        description: params.description,
+        start: { dateTime: params.start },
+        end: { dateTime: params.end },
+        conferenceData: {
+          createRequest: {
+            requestId: `meet-${Date.now()}`,
+            conferenceSolutionKey: {
+              type: "hangoutsMeet",
+            },
+          },
+        },
+      };
+
+      if (params.attendeeEmail) {
+        requestBody.attendees = [
+          {
+            email: params.attendeeEmail,
+            displayName: params.attendeeName,
+          },
+        ];
+      }
+
       const event = await this.calendar.events.insert({
         calendarId: config.GOOGLE_CALENDAR_ID,
-        requestBody: {
-          summary: params.summary,
-          description: params.description,
-          start: { dateTime: params.start },
-          end: { dateTime: params.end },
-        },
+        conferenceDataVersion: 1,
+        sendUpdates: "all",
+        requestBody,
       });
 
       console.log("Google Calendar event created successfully:", event.data);
