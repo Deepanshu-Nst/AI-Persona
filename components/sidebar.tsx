@@ -68,7 +68,10 @@ export function Sidebar() {
           <Briefcase size={16} />
           {!collapsed && <span>Projects</span>}
         </a>
-        <button
+        <a
+          href="https://drive.google.com/file/d/1XmF0pcQhkjhRDaSCeVnNBtV2f0s9n5v-/view?usp=sharing"
+          target="_blank"
+          rel="noopener noreferrer"
           className={clsx(
             "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50 w-full text-left",
             collapsed && "justify-center"
@@ -76,7 +79,7 @@ export function Sidebar() {
         >
           <FileText size={16} />
           {!collapsed && <span>Resume</span>}
-        </button>
+        </a>
       </div>
 
       <div className="p-3 border-t border-zinc-900">
