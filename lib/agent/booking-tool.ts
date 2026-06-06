@@ -17,7 +17,7 @@ export interface BookingResult {
 
 export async function bookSlot(input: BookingInput): Promise<BookingResult> {
   try {
-    const start = new Date(`${input.date}T${input.time}`);
+    const start = new Date(`${input.date}T${input.time}Z`);
     if (isNaN(start.getTime())) {
       return { success: false, error: "Invalid date or time" };
     }

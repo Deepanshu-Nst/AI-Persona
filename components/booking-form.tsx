@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useEffect } from "react";
 
 export interface BookingFormProps {
   onClose: () => void;
@@ -16,11 +16,47 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorText, setErrorText] = useState("");
 
+  const [selectedTime, setSelectedTime] = useState("");
+  const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string }[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  useEffect(() => {
+    const fetchSlots = async () => {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(date)) {
+        setAvailableSlots([]);
+        setSelectedTime("");
+        return;
+      }
+
+      setLoadingSlots(true);
+      setErrorText("");
+      try {
+        const res = await fetch(`/api/calendar/availability?date=${date}`);
+        if (!res.ok) {
+          throw new Error("Failed to load slots");
+        }
+        const data = await res.json();
+        setAvailableSlots(data.slots || []);
+        setSelectedTime("");
+      } catch (err) {
+        setErrorText("Could not fetch available slots for this date.");
+        setAvailableSlots([]);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchSlots();
+  }, [date]);
+
   const reset = () => {
     setName("");
     setEmail("");
     setDate("");
     setMessage("");
+    setSelectedTime("");
+    setAvailableSlots([]);
     setSubmitting(false);
     setStatus("idle");
     setErrorText("");
@@ -28,8 +64,8 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !date.trim()) {
-      setErrorText("Name, email, and date are required.");
+    if (!name.trim() || !email.trim() || !date.trim() || !selectedTime.trim()) {
+      setErrorText("Name, email, date, and time slot are required.");
       return;
     }
     setSubmitting(true);
@@ -43,6 +79,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
           attendeeName: name,
           attendeeEmail: email,
           date,
+          time: selectedTime,
           message,
         }),
       });
@@ -108,12 +145,52 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
       <div>
         <label className="block text-xs text-gray-500 mb-1">Preferred Date *</label>
         <input
-          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-400"
+          type="date"
+          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-400 cursor-pointer"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          placeholder="e.g. 2026-06-10"
         />
       </div>
+
+      {date && (
+        <div className="space-y-1">
+          <label className="block text-xs text-gray-500">Select Time *</label>
+          {loadingSlots ? (
+            <p className="text-xs text-gray-400 animate-pulse">Loading slots...</p>
+          ) : availableSlots.length > 0 ? (
+            <div className="grid grid-cols-3 gap-2">
+              {availableSlots.map((slot, i) => {
+                const startDate = new Date(slot.start);
+                const pad = (n: number) => String(n).padStart(2, "0");
+                const timeValue = `${pad(startDate.getUTCHours())}:${pad(startDate.getUTCMinutes())}:${pad(startDate.getUTCSeconds())}`;
+                const timeLabel = startDate.toLocaleTimeString("en-US", {
+                  timeZone: "UTC",
+                  hour: "numeric",
+                  minute: "2-digit",
+                });
+                const isSelected = selectedTime === timeValue;
+
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelectedTime(timeValue)}
+                    className={`px-2 py-1.5 text-xs font-medium rounded border transition-colors ${
+                      isSelected
+                        ? "bg-blue-600 border-blue-600 text-white"
+                        : "bg-white border-gray-300 text-gray-700 hover:border-blue-400 hover:text-blue-600"
+                    }`}
+                  >
+                    {timeLabel}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-red-500">No slots available for this date.</p>
+          )}
+        </div>
+      )}
 
       <div>
         <label className="block text-xs text-gray-500 mb-1">Message (optional)</label>
@@ -133,8 +210,8 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={submitting}
-          className="px-4 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50"
+          disabled={submitting || !name.trim() || !email.trim() || !date.trim() || !selectedTime}
+          className="px-4 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? "Submitting..." : "Request Booking"}
         </button>

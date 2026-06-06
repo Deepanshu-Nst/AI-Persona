@@ -5,18 +5,7 @@ import { AvailabilityRequestSchema } from "@/lib/calendar/schema";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const parsed = AvailabilityRequestSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid request", details: parsed.error.flatten() },
-        { status: 400 },
-      );
-    }
-
-    const slots = await getAvailability(parsed.data.date);
-
-    return NextResponse.json({ date: parsed.data.date, slots });
+    return await handleAvailability(body);
   } catch (error) {
     console.error("Availability error:", error);
     return NextResponse.json(
@@ -24,4 +13,32 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const date = searchParams.get("date");
+    return await handleAvailability({ date });
+  } catch (error) {
+    console.error("Availability GET error:", error);
+    return NextResponse.json(
+      { error: "Failed to check availability" },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleAvailability(body: unknown) {
+  const parsed = AvailabilityRequestSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid request", details: parsed.error.flatten() },
+      { status: 400 },
+    );
+  }
+
+  const slots = await getAvailability(parsed.data.date);
+  return NextResponse.json({ date: parsed.data.date, slots });
 }

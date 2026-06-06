@@ -68,20 +68,40 @@ function scoreBm25(
   return score;
 }
 
-function getHeadingBoost(chunk: CorpusChunk, normalizedQuery: string): number {
+function getHeadingBoost(chunk: CorpusChunk, normalizedQuery: string, queryTokens: string[]): number {
   const q = normalizedQuery.toLowerCase();
+  const heading = chunk.heading.toLowerCase();
   let boost = 1.0;
   if (q.includes("experience") || q.includes("intern") || q.includes("work")) {
-    if (chunk.heading.includes("Intern")) boost = Math.max(boost, 1.5);
+    if (heading.includes("intern") || heading.includes("experience") || heading.includes("work")) {
+      boost = Math.max(boost, 1.8);
+    }
   }
-  if (q.includes("project") || q.includes("app") || q.includes("build") || q.includes("repo")) {
-    if (chunk.heading.includes("—") || chunk.heading.includes("Dashboard") || chunk.heading.includes("Agent") || chunk.heading.includes("AI")) boost = Math.max(boost, 1.4);
+  if (q.includes("project") || q.includes("app") || q.includes("build") || q.includes("repo") || q.includes("codebase") || q.includes("dashboard")) {
+    if (
+      heading.includes("—") ||
+      heading.includes("dashboard") ||
+      heading.includes("agent") ||
+      heading.includes("ai") ||
+      heading.includes("project") ||
+      heading.includes("fitcheck") ||
+      heading.includes("aforro") ||
+      heading.includes("devasya") ||
+      heading.includes("riddle") ||
+      heading.includes("tournify")
+    ) {
+      boost = Math.max(boost, 1.8);
+    }
   }
-  if (q.includes("skill") || q.includes("tech") || q.includes("stack")) {
-    if (chunk.heading === "Skills") boost = Math.max(boost, 2.0);
+  if (q.includes("skill") || q.includes("tech") || q.includes("stack") || q.includes("technolog")) {
+    if (heading.includes("skill") || heading.includes("tech") || heading.includes("stack") || heading.includes("technolog")) {
+      boost = Math.max(boost, 2.0);
+    }
   }
-  if (q.includes("education") || q.includes("background") || q.includes("bachelor")) {
-    if (chunk.heading.includes("Bachelor") || chunk.heading === "Summary") boost = Math.max(boost, 1.5);
+  if (q.includes("education") || q.includes("background") || q.includes("bachelor") || q.includes("study") || q.includes("college") || q.includes("university")) {
+    if (heading.includes("bachelor") || heading.includes("summary") || heading.includes("education") || heading.includes("school")) {
+      boost = Math.max(boost, 1.5);
+    }
   }
   return boost;
 }
@@ -111,12 +131,23 @@ export async function search(
     const ngram = jaccardSimilarity(queryBigrams, docBigrams);
 
     let score = BM25_WEIGHT * bm25 + NGRAM_WEIGHT * ngram;
-    score *= getHeadingBoost(chunk, normalized);
+    score *= getHeadingBoost(chunk, normalized, queryTokens);
 
     scored.push({ chunk, score });
   }
 
   scored.sort((a, b) => b.score - a.score);
+
+  // Debug logging for top scored chunks heading boosts
+  for (const s of scored.slice(0, 5)) {
+    const heading = s.chunk.heading.toLowerCase();
+    const boost = getHeadingBoost(s.chunk, normalized, queryTokens);
+    console.log("Heading boost", {
+      heading,
+      queryTokens,
+      boost,
+    });
+  }
 
   if (scored.length === 0 || scored[0].score <= MIN_SCORE) {
     console.warn("search: zero scores", {
@@ -127,6 +158,17 @@ export async function search(
     });
     return [];
   }
+
+  console.warn("search diagnostics", {
+    query,
+    normalizedQuery: normalized,
+    queryTokens,
+    chunkCount: chunks.length,
+    topScores: scored.slice(0, 5).map(s => ({
+      heading: s.chunk.heading,
+      score: s.score,
+    })),
+  });
 
   return scored.slice(0, topK).map((s) => ({
     chunkId: s.chunk.id,

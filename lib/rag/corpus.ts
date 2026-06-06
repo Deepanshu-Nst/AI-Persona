@@ -1,8 +1,39 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { CorpusChunk } from "./types";
 
-const CORPUS_PATH = join(process.cwd(), "corpus", "chunks.json");
+function getCorpusPath(): string {
+  const cwdPath = join(process.cwd(), "corpus", "chunks.json");
+  console.log({
+    cwd: process.cwd(),
+    corpusPath: cwdPath,
+    exists: existsSync(cwdPath),
+  });
+
+  if (existsSync(cwdPath)) {
+    return cwdPath;
+  }
+
+  try {
+    const fileDir = dirname(fileURLToPath(import.meta.url));
+    const fallbackPath = join(fileDir, "..", "..", "corpus", "chunks.json");
+    console.log({
+      fallbackPath,
+      exists: existsSync(fallbackPath),
+    });
+    if (existsSync(fallbackPath)) {
+      return fallbackPath;
+    }
+  } catch (err) {
+    console.error("Fallback path calculation failed:", err);
+  }
+
+  return cwdPath;
+}
+
+const CORPUS_PATH = getCorpusPath();
 
 let cached: CorpusChunk[] | null = null;
 

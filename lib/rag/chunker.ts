@@ -108,13 +108,20 @@ export const FILLER_WORDS = new Set([
 
 export function expandSynonyms(query: string): string {
   return query
-    .replace(/\bexperience\b/g, "experience work internships background")
+    .replace(/\binternships\b/gi, "internship experience work")
+    .replace(/\binternship\b/gi, "internships experience work")
+    .replace(/\bpreviously\b/gi, "experience past work")
+    .replace(/\bworked\b/gi, "experience internship project")
+    .replace(/\bskills?\b/gi, "skills tech stack technologies")
     .replace(/\bprojects?\b/gi, "projects apps repositories builds")
-    .replace(/\bskills?\b/gi, "skills tech stack technologies");
+    .replace(/\brepo\b/gi, "repository project codebase")
+    .replace(/\brepositories\b/gi, "repository projects codebase")
+    .replace(/\bexperience\b/gi, "experience work internships background");
 }
 
 export function normalizeQuery(query: string): string {
-  const lower = query.toLowerCase().trim();
+  const stripped = query.replace(/[^\w\s]/g, " ");
+  const lower = stripped.toLowerCase().trim();
   const expanded = expandSynonyms(lower);
   const words = expanded.split(/\s+/).filter((w) => !FILLER_WORDS.has(w));
   return words.join(" ");

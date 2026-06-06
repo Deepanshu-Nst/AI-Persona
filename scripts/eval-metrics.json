@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-06T13:17:08.617Z",
+  "generatedAt": "2026-06-06T13:36:19.566Z",
   "testCases": 17,
   "passed": 17,
   "failed": 0,
@@ -8,10 +8,10 @@
     "unknownRejectionRate": 1,
     "injectionFlagRate": 1,
     "fallbackPassRate": 1,
-    "avgKnownScore": 3.2065,
-    "avgLatencyMs": 0.92,
-    "avgKnownLatencyMs": 2.19,
-    "avgUnknownLatencyMs": 0.75,
+    "avgKnownScore": 4.3824,
+    "avgLatencyMs": 1.12,
+    "avgKnownLatencyMs": 2.72,
+    "avgUnknownLatencyMs": 0.79,
     "avgInjectionLatencyMs": 0.01
   },
   "voiceLatency": {
@@ -30,7 +30,7 @@
       "name": "Known: FitCheck",
       "category": "known",
       "passed": true,
-      "latencyMs": 5.12,
+      "latencyMs": 6.42,
       "topScore": 2.753,
       "sources": [
         "GitHub > FitCheck",
@@ -45,38 +45,38 @@
       "name": "Known: Experience",
       "category": "known",
       "passed": true,
-      "latencyMs": 1.77,
-      "topScore": 1.5124,
+      "latencyMs": 2.68,
+      "topScore": 2.4038,
       "sources": [
-        "GitHub > FitCheck",
         "Resume > EXPERIENCE",
+        "GitHub > FitCheck",
         "Resume > Deepanshu Chaudhary",
         "Resume > PROFESSIONAL SUMMARY",
         "Resume > EDUCATION"
       ],
-      "details": "retrieved 5 result(s), top score 1.5124"
+      "details": "retrieved 5 result(s), top score 2.4038"
     },
     {
       "name": "Known: Skills",
       "category": "known",
       "passed": true,
-      "latencyMs": 2.18,
-      "topScore": 2.7671,
+      "latencyMs": 2.72,
+      "topScore": 4.8141,
       "sources": [
-        "GitHub > FitCheck",
         "Resume > SKILLS",
+        "GitHub > FitCheck",
         "Resume > PROJECTS",
         "Resume > PROFESSIONAL SUMMARY",
         "Resume > Deepanshu Chaudhary"
       ],
-      "details": "retrieved 5 result(s), top score 2.7671"
+      "details": "retrieved 5 result(s), top score 4.8141"
     },
     {
       "name": "Known: Bachelor",
       "category": "known",
       "passed": true,
-      "latencyMs": 1.09,
-      "topScore": 5.8829,
+      "latencyMs": 0.98,
+      "topScore": 8.8243,
       "sources": [
         "Resume > EDUCATION",
         "Resume > Deepanshu Chaudhary",
@@ -84,13 +84,13 @@
         "Resume > EXPERIENCE",
         "Resume > Founder & President August 2025 - Present"
       ],
-      "details": "retrieved 5 result(s), top score 5.8829"
+      "details": "retrieved 5 result(s), top score 8.8243"
     },
     {
       "name": "Known: Deepanshu work",
       "category": "known",
       "passed": true,
-      "latencyMs": 0.77,
+      "latencyMs": 0.79,
       "topScore": 3.1169,
       "sources": [
         "Resume > Deepanshu Chaudhary",
@@ -105,7 +105,7 @@
       "name": "Unknown: quantum physics",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.78,
+      "latencyMs": 0.9,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -114,7 +114,7 @@
       "name": "Unknown: unicorn",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.69,
+      "latencyMs": 0.72,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -123,7 +123,7 @@
       "name": "Unknown: meaning of life",
       "category": "unknown",
       "passed": true,
-      "latencyMs": 0.77,
+      "latencyMs": 0.76,
       "topScore": null,
       "sources": [],
       "details": "correctly returned no results"
@@ -159,19 +159,19 @@
       "name": "Booking: book a call",
       "category": "booking",
       "passed": true,
-      "latencyMs": 0.74,
+      "latencyMs": 0.84,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780751828615"
+      "details": "availability: 7 slots, booking: CONF-1780752979563"
     },
     {
       "name": "Booking: schedule meeting",
       "category": "booking",
       "passed": true,
-      "latencyMs": 0.02,
+      "latencyMs": 0.08,
       "topScore": null,
       "sources": [],
-      "details": "availability: 7 slots, booking: CONF-1780751828616"
+      "details": "availability: 7 slots, booking: CONF-1780752979563"
     },
     {
       "name": "Availability: check slots",
@@ -186,28 +186,28 @@
       "name": "Fallback: generic projects",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.6,
-      "topScore": 3.1169,
+      "latencyMs": 0.9,
+      "topScore": 5.1464,
       "sources": [
-        "Resume > Deepanshu Chaudhary",
         "Resume > PROJECTS",
+        "Resume > Deepanshu Chaudhary",
         "Resume > PROFESSIONAL SUMMARY",
         "Resume > EXPERIENCE",
         "Resume > EDUCATION"
       ],
-      "details": "retrieved 5 result(s), top score 3.1169"
+      "details": "retrieved 5 result(s), top score 5.1464"
     },
     {
       "name": "Fallback: generic experience",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.54,
+      "latencyMs": 0.65,
       "topScore": 3.1169,
       "sources": [
         "Resume > Deepanshu Chaudhary",
+        "Resume > EXPERIENCE",
         "GitHub > FitCheck",
         "Resume > PROJECTS",
-        "Resume > EXPERIENCE",
         "Resume > PROFESSIONAL SUMMARY"
       ],
       "details": "retrieved 5 result(s), top score 3.1169"
@@ -216,16 +216,16 @@
       "name": "Fallback: skills request",
       "category": "fallback",
       "passed": true,
-      "latencyMs": 0.52,
-      "topScore": 3.5894,
+      "latencyMs": 0.6,
+      "topScore": 4.8141,
       "sources": [
+        "Resume > SKILLS",
         "Resume > PROJECTS",
         "Resume > Deepanshu Chaudhary",
         "GitHub > FitCheck",
-        "Resume > SKILLS",
         "Resume > PROFESSIONAL SUMMARY"
       ],
-      "details": "retrieved 5 result(s), top score 3.5894"
+      "details": "retrieved 5 result(s), top score 4.8141"
     }
   ]
 }

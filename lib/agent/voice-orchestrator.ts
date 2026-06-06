@@ -95,13 +95,13 @@ function parseTime(text: string): string | null {
 }
 
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  return d.toLocaleDateString("en-US", { timeZone: "UTC", weekday: "long", month: "long", day: "numeric" });
 }
 
 function formatTime(isoString: string): string {
   const d = new Date(isoString);
-  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return d.toLocaleTimeString("en-US", { timeZone: "UTC", hour: "numeric", minute: "2-digit" });
 }
 
 export interface VoiceResponse {
@@ -172,8 +172,8 @@ export async function handleVoiceQuery(
 
     if (result.success) {
       session.phase = "done";
-      const d = new Date(`${date}T${time}`);
-      const timeFormatted = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      const d = new Date(`${date}T${time}Z`);
+      const timeFormatted = d.toLocaleTimeString("en-US", { timeZone: "UTC", hour: "numeric", minute: "2-digit" });
       return {
         text: `All set! Your ${session.booking.duration}-minute call has been confirmed for ${formatDate(date)} at ${timeFormatted}. Your confirmation code is ${result.confirmationCode}. A calendar invite is on the way. Thank you for your interest in Deepanshu!`,
         phase: "hangup",

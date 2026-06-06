@@ -26,15 +26,15 @@ function esc(text: string): string {
 
 function generateMockSlots(date: string): TimeSlot[] {
   const slots: TimeSlot[] = [];
-  const base = new Date(date);
+  const base = new Date(date + "T00:00:00Z");
   if (isNaN(base.getTime())) return [];
 
   for (let h = 9; h <= 17; h++) {
     if (h === 12 || h === 13) continue;
     const start = new Date(base);
-    start.setHours(h, 0, 0, 0);
+    start.setUTCHours(h, 0, 0, 0);
     const end = new Date(base);
-    end.setHours(h, 30, 0, 0);
+    end.setUTCHours(h, 30, 0, 0);
     slots.push({
       start: start.toISOString(),
       end: end.toISOString(),
@@ -131,9 +131,9 @@ export class CalendarClient {
       .sort((a, b) => a.start - b.start);
 
     let cursor = new Date(dayStart);
-    cursor.setHours(BUSINESS_START, 0, 0, 0);
+    cursor.setUTCHours(BUSINESS_START, 0, 0, 0);
     const end = new Date(dayStart);
-    end.setHours(BUSINESS_END, 0, 0, 0);
+    end.setUTCHours(BUSINESS_END, 0, 0, 0);
 
     while (cursor < end) {
       const slotEnd = new Date(cursor.getTime() + slotMinutes * 60 * 1000);
