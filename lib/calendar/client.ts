@@ -79,7 +79,9 @@ function generateMockSlots(date: string): TimeSlot[] {
 function normalizePrivateKey(raw: string): string {
   // Strip surrounding quotes if present
   let key = raw.replace(/^["']|["']$/g, "");
-  // Replace literal \n sequences with real newlines (handles both Vercel and local .env formats)
+  // Handle double-escaped \\n (Vercel stores literal \n as \\n in env output)
+  key = key.replace(/\\n/g, "\n");
+  // Handle single-escaped \n (local .env format)
   key = key.replace(/\\n/g, "\n");
   return key;
 }
