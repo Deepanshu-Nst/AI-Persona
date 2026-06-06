@@ -115,7 +115,7 @@ retrieve(query)
 ### LLM Synthesis Layer (`lib/agent/llm.ts`)
 
 Converts raw search results into professional, recruiter-friendly first-person answers.
-- Checks `GROQ_API_KEY` to call Groq endpoint (`llama3-8b-8192`)
+- Checks `GROQ_API_KEY` to call Groq endpoint (`llama-3.1-8b-instant`)
 - Falls back to `GEMINI_API_KEY` (Gemini 1.5 Flash)
 - Falls back to `OPENAI_API_KEY` (GPT-4o-Mini)
 - Falls back to local formatting template if no API keys are present.
@@ -216,7 +216,7 @@ Availability responses are cached in memory with a 10-minute TTL to avoid redund
 
 ### Hybrid LLM RAG Architecture
 
-The most important architectural decision. BM25 + Jaccard similarity retrieval selects relevant context chunks from the 17-chunk corpus, and then an LLM (Groq `llama3-8b-8192` preferred, with Gemini/OpenAI fallbacks) synthesizes a natural first-person response. This gives:
+The most important architectural decision. BM25 + Jaccard similarity retrieval selects relevant context chunks from the 17-chunk corpus, and then an LLM (Groq `llama-3.1-8b-instant` preferred, with Gemini/OpenAI fallbacks) synthesizes a natural first-person response. This gives:
 - **Zero hallucination** — the LLM is strictly constrained via system instructions to only use the retrieved context, and the orchestrator bypasses LLM calls entirely if no relevant chunks are found.
 - **Extremely low per-query cost** — using Groq/Gemini keeps token charges virtually negligible.
 - **Prompt injection protection** — the guard checks 13 patterns *before* the search is executed, blocking adversarial queries before they can reach the LLM.
