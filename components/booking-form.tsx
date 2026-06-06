@@ -172,11 +172,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="glass rounded-2xl p-5 mt-3 space-y-4 border border-zinc-800 text-left shadow-lg">
-      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-        📅 Request a Call Slot
-      </p>
-
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
       <div className="grid grid-cols-2 gap-3.5">
         <div>
           <label className="block text-xs text-zinc-400 font-semibold mb-1">Name *</label>
@@ -215,7 +211,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
           {loadingSlots ? (
             <p className="text-xs text-zinc-500 animate-pulse font-medium">Loading slots...</p>
           ) : availableSlots.length > 0 ? (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-wrap gap-2">
               {availableSlots.map((slot, i) => {
                 const startDate = new Date(slot.start);
                 const timeLabel = startDate.toLocaleTimeString("en-US", {
@@ -236,10 +232,10 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
                     key={i}
                     type="button"
                     onClick={() => setSelectedTime(timeValue)}
-                    className={`px-2 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-150 ${
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-150 ${
                       isSelected
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-600 border-indigo-500 text-white shadow-md"
-                        : "bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-zinc-100"
+                        ? "bg-zinc-100 border-zinc-100 text-zinc-900 shadow-sm"
+                        : "bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
                     }`}
                   >
                     {timeLabel}
@@ -272,7 +268,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
         <button
           type="submit"
           disabled={submitting || !name.trim() || !email.trim() || !date.trim() || !selectedTime}
-          className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold rounded-xl hover:from-indigo-600 hover:to-purple-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md"
+          className="px-5 py-2.5 bg-zinc-100 text-zinc-900 text-xs font-bold rounded-xl hover:bg-white disabled:opacity-50 disabled:bg-zinc-800 disabled:text-zinc-500 transition-all shadow-sm"
         >
           {submitting ? "Submitting..." : "Confirm Slot"}
         </button>

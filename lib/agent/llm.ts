@@ -126,11 +126,15 @@ function detectResponseStyle(query: string): ResponseStyle {
   return "factual";
 }
 
-export async function generateResponse(
+import { streamText, type StreamTextResult } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+
+export async function generateStreamingResponse(
   query: string,
   results: RetrievalResult[],
   conversationId?: string,
-): Promise<string> {
+) {
   const groqKey = process.env.GROQ_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
@@ -151,16 +155,15 @@ export async function generateResponse(
 - Target exactly 1 or 2 concise paragraphs. Do NOT write more than 2 paragraphs.
 - Frame answers around real problem-solving, product ownership, and shipping live apps.
 - Maintain a direct, calm, and professional founder-engineer tone.
-- Do NOT use motivational filler, over-roleplayed enthusiasm, or self-praise exaggeration (e.g., avoid "I am proud of", "I'm excited about", "Overall", "This project allowed me", "I'm confident in my ability").
+- Do NOT use motivational filler, over-roleplayed enthusiasm, or self-praise exaggeration.
 - Speak in the first person ("I", "my") naturally. Do not mention "my resume" or "the corpus".`;
   } else {
     styleInstructions = `STYLE: CONCISE FACTUAL (2-4 SENTENCES MAX)
 - Target exactly 2 to 4 sentences. Do NOT write more.
 - State the core facts and tech stack immediately.
-- Absolutely NO introductory or concluding paragraphs (e.g., do not say "Based on the information...", "Here is...", or "Let me know if you need more details").`;
+- Absolutely NO introductory or concluding paragraphs.`;
   }
 
-  // Inject conversational context if memory is present
   let memoryContext = "";
   if (conversationId) {
     const memory = getMemory(conversationId);
@@ -169,7 +172,7 @@ export async function generateResponse(
 - The user is currently discussing the project: ${memory.lastDiscussedProject}.
 - Previous user query: "${memory.lastQuery ?? ""}"
 - Your previous answer: "${memory.lastResponse ?? ""}"
-Keep this flow in mind. If the user asks follow-up questions (e.g. "How does it work?" or "Explain its architecture"), answer directly in context without reintroducing the project name from scratch. Do not repeat the project's background info unless asked.`;
+Keep this flow in mind. Answer directly in context without reintroducing the project name from scratch.`;
     }
   }
 
@@ -181,16 +184,14 @@ Role & Tone Guidelines:
 - Respond conversationally and naturally, as if in a real conversation or interview.
 - Never dump raw markdown headings, metadata blocks, or internal source headers.
 - Integrate details from my projects, repository metadata, and experience smoothly.
-- Synthesize information across my resume and GitHub repositories when relevant to give cohesive responses.
 
 Tone & Word Choices Rules:
-- STRICTLY avoid generic AI language, filler phrases, or overenthusiastic corporate speak, such as: "I'm really excited about", "I'm proud of", "Overall", "This project allowed me", "I’m confident in my ability", "I'm passionate about", "As an AI assistant".
+- STRICTLY avoid generic AI language, filler phrases, or overenthusiastic corporate speak.
 - Speak directly, calmly, and technically, prioritizing signal over fluff.
-- Never mention the word "Context", "corpus", "chunks", or internal system terms. Speak naturally as if from your own memory.
-- If a question is reflective or opinion-based (e.g., "Why should we hire you?"), synthesize a thoughtful first-person answer using the facts in the context. Never hallucinate facts not in the context, but reason about them naturally.
+- Never mention the word "Context", "corpus", "chunks", or internal system terms.
 
 STRICT LENGTH CONTROLS:
-- Factual queries: 2-4 sentences max, no intro/outro.
+- Factual queries: 2-4 sentences max.
 - Reflective/Recruiter queries: 1-2 concise paragraphs max.
 - Technical queries: structured and concise architecture details.
 
@@ -201,102 +202,33 @@ ${context}
 
 User Query: ${query}`;
 
-  const activeModel = "llama-3.1-8b-instant";
-
+  let model;
   if (groqKey) {
-    try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${groqKey}`,
-        },
-        body: JSON.stringify({
-          model: activeModel,
-          messages: [{ role: "user", content: systemPrompt }],
-          temperature: 0.15,
-          max_tokens: 350,
-        }),
-      });
+    const groq = createOpenAI({ baseURL: "https://api.groq.com/openai/v1", apiKey: groqKey });
+    model = groq("llama-3.1-8b-instant");
+  } else if (geminiKey) {
+    const google = createGoogleGenerativeAI({ apiKey: geminiKey });
+    model = google("gemini-1.5-flash");
+  } else if (openAiKey) {
+    const openai = createOpenAI({ apiKey: openAiKey });
+    model = openai("gpt-4o-mini");
+  } else {
+    throw new Error("No LLM API key configured");
+  }
 
-      if (res.ok) {
-        const data = await res.json();
-        const text = data.choices?.[0]?.message?.content;
-        if (text) return text.trim();
-      } else {
-        console.error("Groq API returned status:", res.status);
+  const result = await streamText({
+    model,
+    prompt: systemPrompt,
+    temperature: 0.15,
+    maxTokens: 350,
+    onFinish: ({ text }) => {
+      if (conversationId) {
+        import("./memory").then(({ updateMemory }) => {
+          updateMemory(conversationId, query, text);
+        });
       }
-    } catch (err) {
-      console.error("Groq API call failed:", err);
-    }
-  }
+    },
+  });
 
-  if (geminiKey) {
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: systemPrompt }] }],
-            generationConfig: {
-              temperature: 0.15,
-              maxOutputTokens: 350,
-            },
-          }),
-        }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text.trim();
-      } else {
-        console.error("Gemini API returned status:", res.status);
-      }
-    } catch (err) {
-      console.error("Gemini API call failed:", err);
-    }
-  }
-
-  if (openAiKey) {
-    try {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${openAiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [{ role: "user", content: systemPrompt }],
-          temperature: 0.15,
-          max_tokens: 350,
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const text = data.choices?.[0]?.message?.content;
-        if (text) return text.trim();
-      } else {
-        console.error("OpenAI API returned status:", res.status);
-      }
-    } catch (err) {
-      console.error("OpenAI API call failed:", err);
-    }
-  }
-
-  if (results.length === 0) {
-    return "I don't really have enough context around that specifically, but I'm happy to talk about my projects, AI work, engineering experience, or anything from my portfolio.";
-  }
-
-  const top = results[0];
-  const cleaned = top.content
-    .replace(/#+\s*/g, "")
-    .replace(/\n+/g, "\n")
-    .trim();
-
-  return `Based on my ${top.source}:\n\n${cleaned}`;
+  return result;
 }

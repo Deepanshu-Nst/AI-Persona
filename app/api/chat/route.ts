@@ -21,14 +21,25 @@ export async function POST(request: NextRequest) {
       source: "chat",
     });
 
-    const chatResponse: ChatResponse = {
-      reply: response.answer,
-      sources: (response.metadata?.sourceSnippets as { label: string; snippet: string }[]) ?? [],
-      bookingAvailable: (response.metadata?.bookingAvailable as boolean) ?? false,
-      conversationId,
-    };
+    const sources = (response.metadata?.sourceSnippets as { label: string; snippet: string }[]) ?? [];
+    const bookingAvailable = (response.metadata?.bookingAvailable as boolean) ?? false;
 
-    return NextResponse.json(chatResponse);
+    if (response.stream) {
+      const headers = new Headers();
+      headers.set("X-Sources", JSON.stringify(sources));
+      headers.set("X-Booking-Available", bookingAvailable ? "true" : "false");
+
+      return new Response(response.stream.textStream, { headers });
+    } else {
+      // For instant replies like greetings
+      const chatResponse: ChatResponse = {
+        reply: response.answer,
+        sources,
+        bookingAvailable,
+        conversationId,
+      };
+      return NextResponse.json(chatResponse);
+    }
   } catch (error) {
     console.error("Chat API error:", error);
     return NextResponse.json(

@@ -43,6 +43,7 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
         "Hi! I'm Deepanshu's AI assistant here to answer questions about my background, experience, and projects. You can ask me things like 'What experience do you have?', 'Tell me about your projects', or 'What skills do you have?' — or you can book a call with me directly.",
       sources: [],
       metadata: { bookingAvailable: false, conversationId },
+      isInstant: true,
     };
   }
 
@@ -64,6 +65,7 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
       answer: "I mostly stay focused on my work, projects, and technical background here. Happy to dive into AI systems, product architecture, or anything from my portfolio.",
       sources: [],
       metadata: { bookingAvailable: false, conversationId },
+      isInstant: true,
     };
   }
 
@@ -72,6 +74,7 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
       answer: "I don't really have enough context around that specifically, but I'm happy to talk about my projects, AI work, engineering experience, or anything from my portfolio.",
       sources: [],
       metadata: { bookingAvailable: false, conversationId },
+      isInstant: true,
     };
   }
 
@@ -80,16 +83,15 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
       answer: "Yes, you can book a call with me! Click the button below to request a slot.",
       sources: [],
       metadata: { bookingAvailable: true, conversationId },
+      isInstant: true,
     };
   }
 
-  const reply = await generateResponse(query, result.results, conversationId);
-
-  // Update memory
-  updateMemory(conversationId, query, reply);
+  const streamResult = await generateStreamingResponse(query, result.results, conversationId);
 
   return {
-    answer: reply,
+    answer: "",
+    stream: streamResult,
     sources: result.results.map((r) => r.source),
     metadata: {
       sourceSnippets: extractSources(result),

@@ -6,6 +6,8 @@ export interface AgentContext {
 
 export interface AgentResponse {
   answer: string;
+  stream?: any;
+  isInstant?: boolean;
   sources?: string[];
   metadata?: Record<string, unknown>;
 }
