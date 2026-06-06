@@ -241,11 +241,10 @@ export class CalendarClient {
       return { id: event.data.id ?? "unknown", htmlLink: event.data.htmlLink ?? undefined };
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
-      console.error("Google Calendar event insertion failed:", errMsg);
-      // Fallback to mock event so the UI booking flow still completes
-      const mockId = "mock-" + Date.now();
-      console.log("Returning fallback mock event:", { mockId });
-      return { id: mockId };
+      const errDetails = (err as any)?.response?.data ?? {};
+      console.error("Google Calendar event insertion failed:", errMsg, errDetails);
+      // Re-throw so the booking route returns a proper 500 with the real error
+      throw new Error(`Calendar event insertion failed: ${errMsg} | ${JSON.stringify(errDetails)}`);
     }
   }
 
