@@ -1,4 +1,4 @@
-import { calendarClient } from "@/lib/calendar/client";
+import { calendarClient, parseUtcDateTime } from "@/lib/calendar/client";
 
 export interface BookingInput {
   date: string;
@@ -16,13 +16,28 @@ export interface BookingResult {
 }
 
 export async function bookSlot(input: BookingInput): Promise<BookingResult> {
+  console.log("bookSlot called with input:", input);
   try {
-    const start = new Date(`${input.date}T${input.time}Z`);
+    let timeStr = input.time.trim();
+    if (timeStr.split(":").length === 2) {
+      timeStr += ":00";
+    }
+
+    const start = parseUtcDateTime(input.date, timeStr);
     if (isNaN(start.getTime())) {
+      console.error("bookSlot: invalid date/time conversion result", {
+        date: input.date,
+        time: timeStr,
+      });
       return { success: false, error: "Invalid date or time" };
     }
 
     const end = new Date(start.getTime() + input.duration * 60 * 1000);
+
+    console.log("bookSlot parsed ISO intervals:", {
+      start: start.toISOString(),
+      end: end.toISOString(),
+    });
 
     const event = await calendarClient.createEvent({
       summary: `Call with Deepanshu${input.attendeeName ? ` (${input.attendeeName})` : ""}`,
@@ -37,6 +52,8 @@ export async function bookSlot(input: BookingInput): Promise<BookingResult> {
       ? event.id.replace("mock-", "CONF-")
       : `CONF-${event.id.slice(0, 8).toUpperCase()}`;
 
+    console.log("bookSlot success, confirmation code:", code);
+
     return {
       success: true,
       eventId: event.id,
@@ -44,6 +61,7 @@ export async function bookSlot(input: BookingInput): Promise<BookingResult> {
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("bookSlot exception:", err);
     return { success: false, error: message };
   }
 }

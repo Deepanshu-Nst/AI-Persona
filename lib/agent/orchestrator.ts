@@ -1,6 +1,7 @@
 import type { AgentContext, AgentResponse } from "@/types";
 import { retrieve } from "@/lib/agent/retrieval-tool";
 import { generateResponse } from "@/lib/agent/llm";
+import { getMemory, updateMemory } from "@/lib/agent/memory";
 
 const BOOKING_KEYWORDS = [
   "book", "schedule", "call", "meeting", "appointment",
@@ -45,12 +46,22 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
     };
   }
 
-  const result = await retrieve(query);
+  // Conversational memory pronoun expansion
+  const memory = getMemory(conversationId);
+  let effectiveQuery = query;
+
+  const refersToPrevious = /\b(it|its|this|that|project|app|platform|repo|run it|use it|workings|architecture|design)\b/i.test(query);
+  if (refersToPrevious && memory.lastDiscussedProject) {
+    effectiveQuery = `${query} (referring to ${memory.lastDiscussedProject})`;
+    console.log(`Query expanded using memory: "${query}" -> "${effectiveQuery}"`);
+  }
+
+  const result = await retrieve(effectiveQuery);
   const bookingIntent = detectBookingIntent(query);
 
   if (result.rejected) {
     return {
-      answer: "I mostly stay focused on my work, projects, and technical background here. Happy to talk about AI systems, products, engineering, or anything from my portfolio.",
+      answer: "I mostly stay focused on my work, projects, and technical background here. Happy to dive into AI systems, product architecture, or anything from my portfolio.",
       sources: [],
       metadata: { bookingAvailable: false, conversationId },
     };
@@ -72,7 +83,10 @@ export async function orchestrate(context: AgentContext): Promise<AgentResponse>
     };
   }
 
-  const reply = await generateResponse(query, result.results);
+  const reply = await generateResponse(query, result.results, conversationId);
+
+  // Update memory
+  updateMemory(conversationId, query, reply);
 
   return {
     answer: reply,

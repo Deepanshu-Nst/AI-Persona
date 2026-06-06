@@ -33,21 +33,46 @@ function scoreHeadingMatch(chunkHeading: string, query: string): number {
   const q = query.toLowerCase();
   const h = chunkHeading.toLowerCase();
   let score = 0;
-  if (q.includes("experience") || q.includes("intern") || q.includes("work")) {
-    if (h.includes("intern")) score += 3;
-    if (h === "summary") score += 1;
+
+  // Experience / work / internship queries
+  if (q.includes("experience") || q.includes("intern") || q.includes("work") || q.includes("previously") || q.includes("job")) {
+    if (h.includes("experience") || h.includes("intern") || h.includes("work")) score += 5;
+    if (h.includes("summary")) score += 2;
   }
-  if (q.includes("project") || q.includes("app") || q.includes("build") || q.includes("repo")) {
-    if (h.includes("—") || h.includes("dashboard") || h.includes("agent")) score += 3;
-    if (h.includes("fitcheck") || h.includes("aforro") || h.includes("devasya")) score += 2;
+
+  // Project / app / github queries
+  if (q.includes("project") || q.includes("app") || q.includes("build") || q.includes("repo") || q.includes("codebase")) {
+    if (h.includes("projects") || h.includes("repository") || h.includes("github")) score += 5;
+    if (h.includes("fitcheck") || h.includes("devasya") || h.includes("tournify") || h.includes("riddle")) score += 3;
+    if (h.includes("summary")) score += 1;
   }
-  if (q.includes("skill") || q.includes("tech") || q.includes("stack")) {
-    if (h === "skills") score += 5;
+
+  // Skills / stack queries
+  if (q.includes("skill") || q.includes("tech") || q.includes("stack") || q.includes("language") || q.includes("database")) {
+    if (h.includes("skills")) score += 5;
+    if (h.includes("summary")) score += 1;
   }
-  if (q.includes("education") || q.includes("background") || q.includes("bachelor")) {
-    if (h.includes("bachelor")) score += 3;
-    if (h === "summary") score += 2;
+
+  // Education / background / college
+  if (q.includes("education") || q.includes("background") || q.includes("bachelor") || q.includes("college") || q.includes("school") || q.includes("study")) {
+    if (h.includes("education")) score += 5;
+    if (h.includes("summary")) score += 2;
   }
+
+  // Recruiter / reflective questions (Why hire you, strengths, proud project, roles, etc.)
+  if (
+    q.includes("hire") || q.includes("why should") || q.includes("why we") ||
+    q.includes("strength") || q.includes("proud") || q.includes("roles") ||
+    q.includes("looking for") || q.includes("about you") || q.includes("value") ||
+    q.includes("choose") || q.includes("fit") || q.includes("long term") ||
+    q.includes("team") || q.includes("leadership") || q.includes("ownership") || q.includes("impact")
+  ) {
+    if (h.includes("summary")) score += 5;
+    if (h.includes("experience")) score += 4;
+    if (h.includes("skills")) score += 3;
+    if (h.includes("projects")) score += 3;
+  }
+
   return score;
 }
 
@@ -57,22 +82,24 @@ async function fallbackByHeading(query: string): Promise<RetrievalResponse | nul
   const chunks = await loadCorpus();
   if (chunks.length === 0) return null;
 
-  const scored = chunks.map((c) => ({
-    chunk: c,
-    score: scoreHeadingMatch(c.heading, query),
-  }));
-  scored.sort((a, b) => b.score - a.score);
+  const scored = chunks
+    .map((c) => ({
+      chunk: c,
+      score: scoreHeadingMatch(c.heading, query),
+    }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score);
 
-  if (scored.length === 0 || scored[0].score <= 0) return null;
+  if (scored.length === 0) return null;
 
-  const top = scored[0];
+  const topItems = scored.slice(0, 4);
   return {
-    results: [{
-      content: top.chunk.text,
-      source: top.chunk.sourceLabel,
-      score: 0.01,
-    }],
-    sources: [top.chunk.sourceLabel],
+    results: topItems.map((item) => ({
+      content: item.chunk.text,
+      source: item.chunk.sourceLabel,
+      score: 0.01 + item.score / 100,
+    })),
+    sources: topItems.map((item) => item.chunk.sourceLabel),
     rejected: false,
     rejectReason: null,
     fallback: true,
@@ -87,10 +114,35 @@ export async function retrieve(query: string): Promise<RetrievalResponse> {
 
   const searchResults = await search(query, 5);
 
-  if (searchResults.length === 0) {
+  const isRecruiterQuery = [
+    "hire", "why should", "why we", "strength", "proud", "roles",
+    "looking for", "about you", "value", "choose", "fit", "long term",
+    "strengths", "weakness", "weaknesses", "why you", "fit for role",
+    "what kind of roles", "what are you looking for", "team", "leadership",
+    "ownership", "impact"
+  ].some(term => query.toLowerCase().includes(term));
+
+  if (isRecruiterQuery || searchResults.length === 0) {
     const fallback = await fallbackByHeading(query);
-    if (fallback) return fallback;
-    return { results: [], sources: [], rejected: false, rejectReason: null, fallback: false };
+    if (fallback) {
+      const seen = new Set(searchResults.map(r => r.sourceLabel));
+      const mergedResults = [
+        ...searchResults.map(r => ({ content: r.text, source: r.sourceLabel, score: r.score })),
+      ];
+      for (const fallbackResult of fallback.results) {
+        if (!seen.has(fallbackResult.source)) {
+          seen.add(fallbackResult.source);
+          mergedResults.push(fallbackResult);
+        }
+      }
+      return {
+        results: mergedResults.slice(0, 5),
+        sources: mergedResults.slice(0, 5).map(r => r.source),
+        rejected: false,
+        rejectReason: null,
+        fallback: true,
+      };
+    }
   }
 
   return {

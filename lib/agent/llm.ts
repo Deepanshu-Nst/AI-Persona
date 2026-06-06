@@ -1,69 +1,109 @@
 import type { RetrievalResult } from "./retrieval-tool";
+import { getMemory } from "./memory";
 
 export function prepareContextForLLM(results: RetrievalResult[]): string {
   if (results.length === 0) return "";
 
-  // 1. Deduplicate by source label
-  const seenSources = new Set<string>();
-  const uniqueResults: RetrievalResult[] = [];
+  // Group chunks by high-level semantic category for semantic diversity
+  const groups: Record<string, RetrievalResult[]> = {};
+
   for (const r of results) {
-    if (!seenSources.has(r.source)) {
-      seenSources.add(r.source);
-      uniqueResults.push(r);
+    let category = "other";
+    const label = r.source.toLowerCase();
+
+    if (label.includes("summary")) {
+      category = "summary";
+    } else if (label.includes("experience") || label.includes("intern")) {
+      category = "experience";
+    } else if (label.includes("skills")) {
+      category = "skills";
+    } else if (label.includes("devasya")) {
+      category = "project-devasya";
+    } else if (label.includes("fitcheck")) {
+      category = "project-fitcheck";
+    } else if (label.includes("tournify")) {
+      category = "project-tournify";
+    } else if (label.includes("riddle") || label.includes("reasoning")) {
+      category = "project-riddle";
+    } else if (label.startsWith("github > ")) {
+      const repoName = r.source.replace(/^github\s*>\s*/i, "").trim();
+      category = `github-${repoName}`;
+    } else if (label.includes("project")) {
+      category = "projects";
     }
+
+    if (!groups[category]) {
+      groups[category] = [];
+    }
+    groups[category].push(r);
   }
 
-  // 2. Group by type (Resume vs GitHub Repos)
-  const resumeSections: { heading: string; content: string }[] = [];
-  const repoSections: { name: string; content: string }[] = [];
+  // Interleave chunks from groups to prioritize semantic diversity
+  const selected: RetrievalResult[] = [];
+  const groupKeys = Object.keys(groups);
+  let hasMore = true;
+  let index = 0;
 
-  for (const r of uniqueResults) {
-    if (r.source.startsWith("Resume > ")) {
-      const heading = r.source.replace("Resume > ", "").trim();
-      let cleanContent = r.content;
-      const headingPrefix = `# ${heading}`;
-      if (cleanContent.startsWith(headingPrefix)) {
-        cleanContent = cleanContent.slice(headingPrefix.length).trim();
+  while (hasMore && selected.length < 5) {
+    hasMore = false;
+    for (const key of groupKeys) {
+      const groupList = groups[key];
+      if (index < groupList.length) {
+        selected.push(groupList[index]);
+        hasMore = true;
       }
-      resumeSections.push({ heading, content: cleanContent });
-    } else if (r.source.startsWith("GitHub > ")) {
-      const name = r.source.replace("GitHub > ", "").trim();
-      let cleanContent = r.content;
-      const headingPrefix = `# ${name}`;
-      if (cleanContent.startsWith(headingPrefix)) {
-        cleanContent = cleanContent.slice(headingPrefix.length).trim();
+    }
+    index++;
+  }
+
+  // Deduplicate and process content
+  const processedBlocks: string[] = [];
+  const seenHeadings = new Set<string>();
+
+  for (const item of selected.slice(0, 4)) { // keep context compact
+    let cleanContent = item.content;
+
+    // Strip noisy metadata: Stars, Topics, Language
+    cleanContent = cleanContent
+      .split("\n")
+      .filter(line => {
+        const lower = line.toLowerCase().trim();
+        return !(lower.startsWith("stars:") || lower.startsWith("topics:") || lower.startsWith("language:"));
+      })
+      .join("\n");
+
+    // Deduplicate top headings
+    const lines = cleanContent.split("\n");
+    if (lines[0] && lines[0].startsWith("#")) {
+      const headingText = lines[0].replace(/#+\s*/g, "").trim().toLowerCase();
+      if (seenHeadings.has(headingText)) {
+        lines.shift(); // remove duplicate top heading
+        cleanContent = lines.join("\n");
+      } else {
+        seenHeadings.add(headingText);
       }
-      repoSections.push({ name, content: cleanContent });
-    } else {
-      resumeSections.push({ heading: r.source, content: r.content });
+    }
+
+    cleanContent = cleanContent.trim();
+    if (cleanContent) {
+      let sourceLabel = "Resume / Portfolio Info";
+      if (item.source.startsWith("Resume > ")) {
+        sourceLabel = `Resume > ${item.source.replace("Resume > ", "")}`;
+      } else if (item.source.startsWith("GitHub > ")) {
+        sourceLabel = `GitHub Repository Info > ${item.source.replace("GitHub > ", "")}`;
+      }
+      processedBlocks.push(`[source: "${sourceLabel}"]\n${cleanContent}`);
     }
   }
 
-  // 3. Construct clean segment blocks
-  const parts: string[] = [];
-
-  if (resumeSections.length > 0) {
-    parts.push("=== RESUME INFORMATION ===");
-    for (const sec of resumeSections) {
-      parts.push(`Section: ${sec.heading}\n${sec.content}`);
-    }
-  }
-
-  if (repoSections.length > 0) {
-    parts.push("=== GITHUB REPOSITORIES ===");
-    for (const repo of repoSections) {
-      parts.push(`Repository: ${repo.name}\n${repo.content}`);
-    }
-  }
-
-  return parts.join("\n\n");
+  return processedBlocks.join("\n\n");
 }
 
 type ResponseStyle = "factual" | "reflective" | "technical";
 
 function detectResponseStyle(query: string): ResponseStyle {
   const q = query.toLowerCase();
-  
+
   const technicalKeywords = [
     "how does", "explain your", "explain how", "architecture", "workings",
     "workflow", "pipeline", "deep dive", "implementation", "technical details",
@@ -73,7 +113,8 @@ function detectResponseStyle(query: string): ResponseStyle {
     "why should we hire", "why hire", "best project", "most proud", "strengths",
     "weaknesses", "roles are you looking", "looking for", "long term", 
     "what do you want to build", "why you", "about yourself", "tell me about you",
-    "why should", "hire you", "strength", "weakness"
+    "why should", "hire you", "strength", "weakness", "fit for role", "what kind of roles",
+    "what are you looking for", "team", "leadership", "ownership", "impact", "roles", "kind of roles"
   ];
 
   if (technicalKeywords.some(kw => q.includes(kw))) {
@@ -88,6 +129,7 @@ function detectResponseStyle(query: string): ResponseStyle {
 export async function generateResponse(
   query: string,
   results: RetrievalResult[],
+  conversationId?: string,
 ): Promise<string> {
   const groqKey = process.env.GROQ_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
@@ -98,22 +140,37 @@ export async function generateResponse(
 
   let styleInstructions = "";
   if (style === "technical") {
-    styleInstructions = `STYLE: TECHNICAL DEEP DIVE
+    styleInstructions = `STYLE: TECHNICAL DEEP DIVE (CONCISE)
 - Explain with architectural depth and technical precision.
 - Detail the workflow, pipelines, technology choices, and data flow.
-- Use clear bullet points or numbered lists where appropriate to structure complex details.
-- Avoid generic high-level fluff or hand-waving summaries; go straight to the engineering facts.`;
+- Use clear, structured bullet points or numbered lists.
+- Keep explanation of architecture concise and avoid repeating technology stack names excessively.
+- Target a length of 2-3 short, dense paragraphs or a neat bulleted list. No conversational fluff or preamble.`;
   } else if (style === "reflective") {
-    styleInstructions = `STYLE: REFLECTIVE & RECRUITER
-- Answer thoughtfully by synthesizing my strengths, projects, and work history.
-- Maintain a direct, confident, and professional developer/founder energy.
-- Avoid over-enthusiastic roleplay or corporate support speak.
-- Frame answers around real problem-solving, independent product execution, and shipping production-ready systems.
-- Keep responses natural, human-like, and highly conversational.`;
+    styleInstructions = `STYLE: REFLECTIVE & RECRUITER (1-2 CONCISE PARAGRAPHS)
+- Target exactly 1 or 2 concise paragraphs. Do NOT write more than 2 paragraphs.
+- Frame answers around real problem-solving, product ownership, and shipping live apps.
+- Maintain a direct, calm, and professional founder-engineer tone.
+- Do NOT use motivational filler, over-roleplayed enthusiasm, or self-praise exaggeration (e.g., avoid "I am proud of", "I'm excited about", "Overall", "This project allowed me", "I'm confident in my ability").
+- Speak in the first person ("I", "my") naturally. Do not mention "my resume" or "the corpus".`;
   } else {
-    styleInstructions = `STYLE: CONCISE FACTUAL
-- Keep your response extremely direct and brief (aim for 2-3 sentences max).
-- State the core facts and tech stack immediately without preambles or wrap-ups.`;
+    styleInstructions = `STYLE: CONCISE FACTUAL (2-4 SENTENCES MAX)
+- Target exactly 2 to 4 sentences. Do NOT write more.
+- State the core facts and tech stack immediately.
+- Absolutely NO introductory or concluding paragraphs (e.g., do not say "Based on the information...", "Here is...", or "Let me know if you need more details").`;
+  }
+
+  // Inject conversational context if memory is present
+  let memoryContext = "";
+  if (conversationId) {
+    const memory = getMemory(conversationId);
+    if (memory.lastDiscussedProject) {
+      memoryContext = `\n\nCONVERSATIONAL MEMORY / CONTEXT:
+- The user is currently discussing the project: ${memory.lastDiscussedProject}.
+- Previous user query: "${memory.lastQuery ?? ""}"
+- Your previous answer: "${memory.lastResponse ?? ""}"
+Keep this flow in mind. If the user asks follow-up questions (e.g. "How does it work?" or "Explain its architecture"), answer directly in context without reintroducing the project name from scratch. Do not repeat the project's background info unless asked.`;
+    }
   }
 
   const systemPrompt = `You are Deepanshu Chaudhary himself (acting as his first-person AI Persona). Answer the user's query in the first person ("I", "me", "my").
@@ -122,21 +179,29 @@ Role & Tone Guidelines:
 - You are a sharp AI engineer and full-stack developer. Speak with startup-founder energy: technically precise, confident, professional, and recruiter-friendly.
 - Do NOT sound like a robotic customer support chatbot.
 - Respond conversationally and naturally, as if in a real conversation or interview.
-- Never dump raw markdown headings, metadata blocks (like "Stars: 0", "Language: Python"), or internal source headers (like "Based on Resume > EXPERIENCES").
-- Integrate details from my projects, repository metadata, and experience smoothly (e.g., weave in technologies and stars naturally instead of listing them as raw key-value lines).
+- Never dump raw markdown headings, metadata blocks, or internal source headers.
+- Integrate details from my projects, repository metadata, and experience smoothly.
 - Synthesize information across my resume and GitHub repositories when relevant to give cohesive responses.
 
 Tone & Word Choices Rules:
 - STRICTLY avoid generic AI language, filler phrases, or overenthusiastic corporate speak, such as: "I'm really excited about", "I'm proud of", "Overall", "This project allowed me", "I’m confident in my ability", "I'm passionate about", "As an AI assistant".
 - Speak directly, calmly, and technically, prioritizing signal over fluff.
 - Never mention the word "Context", "corpus", "chunks", or internal system terms. Speak naturally as if from your own memory.
+- If a question is reflective or opinion-based (e.g., "Why should we hire you?"), synthesize a thoughtful first-person answer using the facts in the context. Never hallucinate facts not in the context, but reason about them naturally.
 
-${styleInstructions}
+STRICT LENGTH CONTROLS:
+- Factual queries: 2-4 sentences max, no intro/outro.
+- Reflective/Recruiter queries: 1-2 concise paragraphs max.
+- Technical queries: structured and concise architecture details.
+
+${styleInstructions}${memoryContext}
 
 Context:
 ${context}
 
 User Query: ${query}`;
+
+  const activeModel = "llama-3.1-8b-instant";
 
   if (groqKey) {
     try {
@@ -147,7 +212,7 @@ User Query: ${query}`;
           Authorization: `Bearer ${groqKey}`,
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: activeModel,
           messages: [{ role: "user", content: systemPrompt }],
           temperature: 0.15,
           max_tokens: 350,
@@ -223,9 +288,8 @@ User Query: ${query}`;
     }
   }
 
-  // Fallback: Elegant first-person formatting of retrieved content
   if (results.length === 0) {
-    return "I don't have that information in my corpus. Please feel free to ask about my experience, skills, projects, or availability.";
+    return "I don't really have enough context around that specifically, but I'm happy to talk about my projects, AI work, engineering experience, or anything from my portfolio.";
   }
 
   const top = results[0];
@@ -236,4 +300,3 @@ User Query: ${query}`;
 
   return `Based on my ${top.source}:\n\n${cleaned}`;
 }
-

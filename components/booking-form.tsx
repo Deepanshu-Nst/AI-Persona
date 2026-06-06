@@ -59,12 +59,14 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
       setHasFetched(false);
       setErrorText("");
       try {
+        console.log(`BookingForm: fetching slots for date: ${normalizedDate}`);
         const res = await fetch(`/api/calendar/availability?date=${normalizedDate}`);
         if (!res.ok) {
           throw new Error("Failed to load slots");
         }
         const data = await res.json();
         const slots = data.slots || [];
+        console.log("BookingForm: retrieved available slots from API:", slots);
         setAvailableSlots(slots);
         
         // Auto-select first available slot
@@ -78,6 +80,7 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
         }
         setHasFetched(true);
       } catch (err) {
+        console.error("BookingForm error fetching slots:", err);
         setErrorText("Could not fetch available slots for this date.");
         setAvailableSlots([]);
         setHasFetched(true);
@@ -105,6 +108,13 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const normalizedDate = normalizeDate(date);
+    console.log("BookingForm: submitting slot booking request:", {
+      name,
+      email,
+      date: normalizedDate,
+      time: selectedTime,
+      message,
+    });
     if (!name.trim() || !email.trim() || !normalizedDate.trim() || !selectedTime.trim()) {
       setErrorText("Name, email, date, and time slot are required.");
       return;
@@ -129,9 +139,11 @@ export function BookingForm({ onClose, onSuccess }: BookingFormProps) {
         throw new Error("Booking failed");
       }
 
+      console.log("BookingForm: booking request confirmed by API");
       setStatus("success");
       onSuccess?.();
-    } catch {
+    } catch (err) {
+      console.error("BookingForm: booking submission failed:", err);
       setErrorText("Something went wrong. Please try again.");
       setStatus("error");
     } finally {

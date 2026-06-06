@@ -10,7 +10,7 @@ function esc(text: string): string {
 export function welcome(audioUrl?: string): string {
   const voice = audioUrl
     ? `<Play>${esc(audioUrl)}</Play>`
-    : `<Say voice="Polly.Joanna">${esc("Hi, I'm Deepanshu's AI assistant. You can ask me about his background, projects, or book a call. What would you like to know?")}</Say>`;
+    : `<Say voice="Polly.Joanna">${esc("Hi, I'm Deepanshu's AI assistant here to talk about my background, projects, or help you book a call with me directly. What would you like to know?")}</Say>`;
 
   return `<?xml version="1.0" encoding="UTF-8"?><Response>${voice}<Gather input="speech" speechTimeout="auto" action="/api/voice/response" method="POST"/></Response>`;
 }

@@ -24,19 +24,43 @@ function esc(text: string): string {
     .replace(/'/g, "&apos;");
 }
 
+export function parseUtcDateOnly(dateStr: string): Date {
+  const parts = dateStr.split("-");
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  return new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+}
+
+export function parseUtcDateTime(dateStr: string, timeStr: string): Date {
+  const dateParts = dateStr.split("-");
+  const timeParts = timeStr.split(":");
+
+  const year = parseInt(dateParts[0], 10);
+  const month = parseInt(dateParts[1], 10) - 1;
+  const day = parseInt(dateParts[2], 10);
+
+  const hours = parseInt(timeParts[0], 10);
+  const minutes = parseInt(timeParts[1], 10);
+  const seconds = timeParts[2] ? parseInt(timeParts[2], 10) : 0;
+
+  return new Date(Date.UTC(year, month, day, hours, minutes, seconds, 0));
+}
+
 function generateMockSlots(date: string): TimeSlot[] {
   const slots: TimeSlot[] = [];
-  const base = new Date(date + "T00:00:00Z");
+  const base = parseUtcDateOnly(date);
   if (isNaN(base.getTime())) return [];
 
   // Skip weekends (0 = Sunday, 6 = Saturday)
   const day = base.getUTCDay();
   if (day === 0 || day === 6) {
+    console.log(`generateMockSlots: weekend date ${date} (day ${day}) skipped.`);
     return [];
   }
 
   for (let h = 9; h <= 17; h++) {
-    if (h === 12 || h === 13) continue;
+    if (h === 12 || h === 13) continue; // Skip lunch hours
     const start = new Date(base);
     start.setUTCHours(h, 0, 0, 0);
     const end = new Date(base);
@@ -63,6 +87,14 @@ export class CalendarClient {
   async checkAvailability(date: string): Promise<TimeSlot[]> {
     const config = getConfig();
 
+    // 1. Filter out weekends immediately at the top
+    const baseDate = parseUtcDateOnly(date);
+    const day = baseDate.getUTCDay();
+    if (day === 0 || day === 6) {
+      console.log(`checkAvailability: weekend date ${date} (day ${day}) requested. Returning empty slots.`);
+      return [];
+    }
+
     if (!this.calendar || !config.GOOGLE_CALENDAR_ID) {
       const slots = generateMockSlots(date);
       console.log("checkAvailability generated mock slots (no credentials):", {
@@ -80,8 +112,14 @@ export class CalendarClient {
         return cached.slots;
       }
 
-      const dayStart = new Date(date + "T00:00:00Z");
-      const dayEnd = new Date(date + "T23:59:59Z");
+      const dayStart = parseUtcDateOnly(date);
+      const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000 - 1000); // end of day
+
+      console.log("checkAvailability querying Google Calendar:", {
+        timeMin: dayStart.toISOString(),
+        timeMax: dayEnd.toISOString(),
+        calendarId: config.GOOGLE_CALENDAR_ID,
+      });
 
       const res = await this.calendar.freebusy.query({
         requestBody: {
@@ -95,6 +133,9 @@ export class CalendarClient {
       const busy: { start: string; end: string }[] = rawBusy
         .filter((b): b is { start: string; end: string } => !!b.start && !!b.end)
         .map((b) => ({ start: b.start!, end: b.end! }));
+      
+      console.log("Google Calendar busy ranges retrieved:", busy);
+
       const freeSlots = this.computeFreeSlots(dayStart, dayEnd, busy, 30);
 
       console.log("checkAvailability generated slots from Google Calendar:", {
@@ -125,22 +166,31 @@ export class CalendarClient {
   }): Promise<CalendarEvent> {
     const config = getConfig();
 
+    console.log("createEvent input params:", params);
+
     if (!this.calendar || !config.GOOGLE_CALENDAR_ID) {
       const mockId = "mock-" + Date.now();
+      console.log("No Google Calendar credentials. Created mock event:", { mockId });
       return { id: mockId };
     }
 
-    const event = await this.calendar.events.insert({
-      calendarId: config.GOOGLE_CALENDAR_ID,
-      requestBody: {
-        summary: params.summary,
-        description: params.description,
-        start: { dateTime: params.start, timeZone: "UTC" },
-        end: { dateTime: params.end, timeZone: "UTC" },
-      },
-    });
+    try {
+      const event = await this.calendar.events.insert({
+        calendarId: config.GOOGLE_CALENDAR_ID,
+        requestBody: {
+          summary: params.summary,
+          description: params.description,
+          start: { dateTime: params.start, timeZone: "UTC" },
+          end: { dateTime: params.end, timeZone: "UTC" },
+        },
+      });
 
-    return { id: event.data.id ?? "unknown", htmlLink: event.data.htmlLink ?? undefined };
+      console.log("Google Calendar event created successfully:", event.data);
+      return { id: event.data.id ?? "unknown", htmlLink: event.data.htmlLink ?? undefined };
+    } catch (err) {
+      console.error("Google Calendar event insertion failed:", err);
+      throw err;
+    }
   }
 
   private computeFreeSlots(

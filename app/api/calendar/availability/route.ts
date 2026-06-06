@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAvailability } from "@/lib/agent/availability-tool";
 import { AvailabilityRequestSchema } from "@/lib/calendar/schema";
+import { parseUtcDateOnly } from "@/lib/calendar/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,10 +41,15 @@ async function handleAvailability(body: unknown) {
   }
 
   const slots = await getAvailability(parsed.data.date);
+  
+  const parsedDate = parseUtcDateOnly(parsed.data.date);
   console.log({
-    requestedDate: parsed.data.date,
-    generatedSlots: slots,
+    rawDate: parsed.data.date,
+    parsedDate: parsedDate.toISOString(),
+    utcDay: parsedDate.getUTCDay(),
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    generatedSlots: slots,
   });
+
   return NextResponse.json({ date: parsed.data.date, slots });
 }
